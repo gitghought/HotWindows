@@ -1,0 +1,11 @@
+F1::
+HotWindows++
+Menu,MyMenu,Add
+Menu,MyMenu,DeleteAll
+Menu,MyMenu,Add,&1-%HotWindows%,Menus
+Menu,MyMenu,Icon,&1-%HotWindows%,f:\OneDrive\ahkinfo1.3.5.exe
+Menu,MyMenu,Show
+Exit
+return
+Menus:
+return
