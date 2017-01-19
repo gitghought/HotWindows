@@ -240,7 +240,7 @@ bat=
 	ping 127.0.0.1 -n 2>nul
 	del `%1
 	if exist `%1 goto start
-	xcopy %D_history%\HotWindows-master %A_ScriptDir% /e
+	xcopy %D_history% %A_ScriptDir% /e/s/y
 	start %A_ScriptFullPath%
 	del `%0
 	)
@@ -248,7 +248,7 @@ bat=
 	IfExist %batfilename%
 		FileDelete %batfilename%
 	FileAppend, %bat%, %batfilename%
-	Run,%batfilename% "%A_ScriptFullPath%", , Hide
+	Run,%batfilename% , , Hide
 	ExitApp
 return
 
