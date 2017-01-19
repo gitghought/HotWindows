@@ -19,7 +19,6 @@ if (GetJson[1].time>Edition){
 	IfMsgBox Yes
 		gosub,Downloand
 }
-return
 Menu,Tray,Add,Hot-Windows,Menu_show
 Menu,Tray,Add,开机启动,Auto
 Menu,Tray,Add,重启脚本,Reload
@@ -214,7 +213,7 @@ Downloand:
 	WP2=0
 	if ((E:=InternetFileRead( binData, URL, False, 1024)) > 0 && !ErrorLevel)
 	{
-		VarZ_Save(binData, SAVE)
+		;VarZ_Save(binData, SAVE)
 		GuiControl, Text, Label1, 下载完成。
 		Sleep, 500
 		D_history=%A_ScriptDir%\history\%Edition%
