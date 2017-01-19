@@ -217,7 +217,7 @@ Downloand:
 		VarZ_Save(binData, SAVE)
 		GuiControl, Text, Label1, ÏÂÔØÍê³É¡£
 		Sleep, 500
-		D_history=%A_ScriptDir%\history\%Edition%\HotWindows-master
+		D_history=%A_ScriptDir%\history\%Edition%
 		FileCreateDir,%D_history%
 		SmartZip(SAVE,D_history)
 		FileDelete,%SAVE%
@@ -240,7 +240,7 @@ bat=
 	ping 127.0.0.1 -n 2>nul
 	del `%1
 	if exist `%1 goto start
-	xcopy %D_history% %A_ScriptDir% /e/s/y
+	xcopy %D_history%\HotWindows-master %A_ScriptDir% /s/e/y
 	start %A_ScriptFullPath%
 	del `%0
 	)
