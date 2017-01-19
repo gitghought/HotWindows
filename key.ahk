@@ -207,18 +207,17 @@ Downloand:
 	Gui +LastFound
 	SplitPath, URL, FN,,,, DN
 	FN:=(FN ? FN : DN)
-	SAVE=%A_ScriptDir%\%FN%
+	SAVE=%A_ScriptDir%\HotWindows-master.zip
 	DllCall("QueryPerformanceCounter", "Int64*", T1)
 	WP1=0
 	T2=0
 	WP2=0
-	MsgBox % URL
 	if ((E:=InternetFileRead( binData, URL, False, 1024)) > 0 && !ErrorLevel)
 	{
 		VarZ_Save(binData, SAVE)
 		GuiControl, Text, Label1, 下载完成。
 		Sleep, 500
-		D_history=%A_ScriptDir%\history\%Edition%
+		D_history=%A_ScriptDir%\history\%Edition%\HotWindows-master
 		FileCreateDir,%D_history%
 		SmartZip(SAVE,D_history)
 		FileDelete,%SAVE%
@@ -228,6 +227,7 @@ Downloand:
 		ERR := (E<0) ? "下载失败，错误代码为" . E : "下载过程中出错，未能完成下载。"
 		GuiControl, Text, Label1, %ERR%
 		Sleep, 500
+		Gui,Destroy
 		return
 	}
 	DllCall( "FreeLibrary", UInt,DllCall( "GetModuleHandle", Str,"wininet.dll") )
