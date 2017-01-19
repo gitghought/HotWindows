@@ -27,9 +27,9 @@ Menu,Tray,Default,Hot-Windows
 Menu,Tray,NoStandard
 
 Gui,+HwndMyGuiHwnd -MaximizeBox
-Gui,Add,Text,,热启动
-Gui,Add,Edit,vDDL1
 Gui,Add,Text,,热激活
+Gui,Add,Edit,vDDL1
+Gui,Add,Text,,热启动
 Gui,Add,Edit,vDDL2
 Gui,Add,Text,,最小化热键
 Gui,Add,Hotkey,vWinmin
