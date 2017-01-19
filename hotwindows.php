@@ -12,7 +12,6 @@ $results = array(); //将查询结果转换为数组
 while ($row = mysql_fetch_assoc($result))
  $results[] = $row;
 echo urldecode(json_encode($results,JSON_UNESCAPED_UNICODE)); //输出JSON字符串
-mysql_query('SET NAMES UTF8'); //设置数据库编码
-INSERT INTO Edition VALUES ('201706','中文测试','http://www.baidu.com')
+mysql_query("INSERT INTO Edition VALUES ('" date_add() "','中文测试','http://www.baidu.com')"); //设置数据库编码
 mysql_close($con); //关闭数据库连接
 ?>
