@@ -213,7 +213,7 @@ Downloand:
 	WP2=0
 	if ((E:=InternetFileRead( binData, URL, False, 1024)) > 0 && !ErrorLevel)
 	{
-		;VarZ_Save(binData, SAVE)
+		VarZ_Save(binData, SAVE)
 		GuiControl, Text, Label1, обтьмЙЁи║ё
 		Sleep, 500
 		D_history=%A_ScriptDir%\history\%Edition%
