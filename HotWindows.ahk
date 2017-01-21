@@ -1,3 +1,17 @@
+/*
+1.打开脚本
+2.等待脚本准备完成
+3.演示热激活窗口
+按住空格按下想要激活窗口的索引字母
+当前QQ中有三个窗口我们激活AutoHotkey高级群
+按住空格+GJQ
+按住空格+cjq
+当所想激活的窗口不是首位按下窗口对应的列数
+4.演示热启动窗口
+按住Tab双击需要创建的热激活热键
+5.演示附加热键
+ * 
+ */
 DetectHiddenWindows,On
 #Persistent
 #SingleInstance force
@@ -5,19 +19,23 @@ DetectHiddenWindows,On
 #InstallKeybdHook
 #Include %A_ScriptDir%\JSON.ahk
 GuiArr := Object()
-Edition:=201703
+Edition:=201704
 RegRead,LastTime,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,HotEdit
 RegWrite,REG_SZ,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,HotEdit,%Edition%
-if LastTime and (LastTime<>Edition)
+if LastTime and (LastTime<>Edition){
 	TrayTip,升级成功,已从%LastTime%升级到%Edition%
-GetJson:=JSON.load(Update())
-if (GetJson[1].time>Edition){
-	Time:=GetJson[1].time
-	Inf:=GetJson[1].inf
-	Url:=GetJson[1].URL
-	MsgBox,4,版本更新,最新版本：%Time%`n----------------------------------------`n%INF%
-	IfMsgBox Yes
-		gosub,Downloand
+	Sleep,2000
+}
+if W_InternetCheckConnection("yun.autoahk.com"){
+	GetJson:=JSON.load(Update())
+	if (GetJson[1].time>Edition){
+		Time:=GetJson[1].time
+		Inf:=GetJson[1].inf
+		Url:=GetJson[1].URL
+		MsgBox,4,版本更新,最新版本：%Time%`n----------------------------------------`n%INF%
+		IfMsgBox Yes
+			gosub,Downloand
+	}
 }
 Menu,Tray,Add,Hot-Windows,Menu_show
 Menu,Tray,Add,开机启动,Auto
@@ -50,6 +68,7 @@ hModule := DllCall("LoadLibrary", "Str", tcmatch, "Ptr")
 Arrays:=GetArray()
 ;注册热键
 Gui_Submit("0")
+Sleep,200
 Key:=GuiArr["Key"]
 Hot:=GuiArr["Hot"]
 Layout=qwertyuiopasdfghjklzxcvbnm
@@ -273,6 +292,13 @@ SmartZip(s, o, t = 16)	;内置解压函数
 	}
 }
 
+
+W_InternetCheckConnection(lpszUrl){ ;检查FTP服务是否可连接
+	FLAG_ICC_FORCE_CONNECTION := 0x1
+	dwReserved := 0x0
+	return, DllCall("Wininet.dll\InternetCheckConnection", "Ptr", &lpszUrl, "UInt", FLAG_ICC_FORCE_CONNECTION, "UInt", dwReserved, "Int")
+}
+
 InternetFileRead( ByRef V, URL="", RB=0, bSz=1024, DLP="DLP", F=0x84000000 )
 {
 	SetBatchLines, -1
@@ -340,13 +366,13 @@ Update(){
 
 Gui_Submit(Access){
 	Gui,Submit,NoHide
-	IniRead,IniList,ini.ini
+	IniRead,IniList,%A_ScriptDir%\ini.ini
 	global GuiArr
 	Loop,Parse,IniList,`n
 	{
-		IniRead,Gui_Key,ini.ini,%A_LoopField%,Key
-		IniRead,Gui_Way,ini.ini,%A_LoopField%,Way,%A_Space%
-		IniRead,Gui_Label,ini.ini,%A_LoopField%,Label
+		IniRead,Gui_Key,%A_ScriptDir%\ini.ini,%A_LoopField%,Key
+		IniRead,Gui_Way,%A_ScriptDir%\ini.ini,%A_LoopField%,Way,%A_Space%
+		IniRead,Gui_Label,%A_ScriptDir%\ini.ini,%A_LoopField%,Label
 		if Access
 		{	;写入设置到INI 保存 保存设置时执行
 			if (Gui_Way="Hotkey")
@@ -356,14 +382,14 @@ Gui_Submit(Access){
 				Hotkey,%Gui_Key%,%Gui_Label%
 				Hotkey,%Gui_Key%,On
 			}
-			IniWrite,%Gui_Key%,ini.ini,%A_LoopField%,Key
+			IniWrite,%Gui_Key%,%A_ScriptDir%\ini.ini,%A_LoopField%,Key
 		}else{ ;读取设置到GUI 设置 只在脚本开始时执行
 			if (Gui_Way="Hotkey"){
 				Hotkey,%Gui_Key%,%Gui_Label%
 				Hotkey,%Gui_Key%,On
 			}
 			if (Gui_Way="var"){
-				IniRead,Gui_var,ini.ini,%A_LoopField%,var
+				IniRead,Gui_var,%A_ScriptDir%\ini.ini,%A_LoopField%,var
 				GuiArr[Gui_var]:=Gui_Key
 			}
 			GuiControl,,%A_LoopField%,%Gui_Key%
