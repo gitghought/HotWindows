@@ -20,7 +20,7 @@ DetectHiddenWindows,On
 #InstallKeybdHook
 #Include %A_ScriptDir%\JSON.ahk
 GuiArr := Object()
-Edition:=201703
+Edition:=201704
 RegRead,LastTime,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,HotEdit
 RegWrite,REG_SZ,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,HotEdit,%Edition%
 if LastTime and (LastTime<>Edition){
