@@ -3,15 +3,16 @@
 2.等待脚本准备完成
 3.演示热激活窗口
 按住空格按下想要激活窗口的索引字母
-当前QQ中有三个窗口我们激活AutoHotkey高级群
-按住空格+GJQ
-按住空格+cjq
 当所想激活的窗口不是首位按下窗口对应的列数
 4.演示热启动窗口
 按住Tab双击需要创建的热激活热键
 5.演示附加热键
- * 
- */
+*/
+RegRead,Bubble,HKEY_CURRENT_USER,SOFTWARE\Policies\Microsoft\Windows\Explorer,EnableLegacyBalloonNotifications
+if not Bubble
+	MsgBox,4,重要设置,脚本需要使用气泡提示点击Yes确定切换为气泡提示`n如需恢复请在托盘设置中更改
+		IfMsgBox Yes
+			RegWrite,REG_DWORD,HKEY_CURRENT_USER,SOFTWARE\Policies\Microsoft\Windows\Explorer,EnableLegacyBalloonNotifications,1
 DetectHiddenWindows,On
 #Persistent
 #SingleInstance force
@@ -43,6 +44,7 @@ if W_InternetCheckConnection("http://yun.autoahk.com"){
 }
 Menu,Tray,Add,Hot-Windows,Menu_show
 Menu,Tray,Add,开机启动,Auto
+Menu,Tray,Add,气泡提示,Bubble
 Menu,Tray,Add,重启脚本,Reload
 Menu,Tray,Add,退出脚本,ExitApp
 Menu,Tray,Default,Hot-Windows
@@ -60,7 +62,10 @@ Gui,Add,Hotkey,vWinmax
 Gui,Add,Text,,剧中热键
 Gui,Add,Hotkey,vWinmove
 Gui,Add,Button,gSubmit w135,保存配置
+RegRead,Bubble,HKEY_CURRENT_USER,SOFTWARE\Policies\Microsoft\Windows\Explorer,EnableLegacyBalloonNotifications
 RegRead,HotRun,HKEY_CURRENT_USER,Software\Microsoft\Windows\CurrentVersion\Run,HotRun
+if Bubble
+	Menu,Tray,ToggleCheck,气泡提示
 IfExist,%HotRun%
 {
 	RegWrite,REG_SZ,HKEY_CURRENT_USER,Software\Microsoft\Windows\CurrentVersion\Run,HotRun,%A_ScriptFullPath%
@@ -184,6 +189,14 @@ WinMove:
 	D_Height:=(A_ScreenHeight/2)
 	WinGetPos,X,Y,Width,Height,A
 	WinMove,A,,A_ScreenWidth/8,A_ScreenHeight/8,(A_ScreenWidth/8)*6,(A_ScreenHeight/8)*6
+return
+
+Bubble:
+if Bubble
+	RegWrite,REG_DWORD,HKEY_CURRENT_USER,SOFTWARE\Policies\Microsoft\Windows\Explorer,EnableLegacyBalloonNotifications,0
+else
+	RegWrite,REG_DWORD,HKEY_CURRENT_USER,SOFTWARE\Policies\Microsoft\Windows\Explorer,EnableLegacyBalloonNotifications,1
+	Menu,Tray,ToggleCheck,气泡提示
 return
 
 Auto:
