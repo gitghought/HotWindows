@@ -19,7 +19,7 @@ DetectHiddenWindows,On
 #InstallKeybdHook
 #Include %A_ScriptDir%\JSON.ahk
 GuiArr := Object()
-Edition:=201704
+Edition:=201703
 RegRead,LastTime,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,HotEdit
 RegWrite,REG_SZ,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,HotEdit,%Edition%
 if LastTime and (LastTime<>Edition){
@@ -239,7 +239,7 @@ Downloand:
 		VarZ_Save(binData, SAVE)
 		GuiControl, Text, Label1, œ¬‘ÿÕÍ≥…°£
 		Sleep, 500
-		FileCopy,%A_ScriptDir%,%A_ScriptDir%\history\%Edition%
+		FileCopyDir,%A_ScriptDir%,%A_ScriptDir%\history\%Edition%,1
 		D_history=%A_ScriptDir%\history\%time%
 		FileCreateDir,%D_history%
 		SmartZip(SAVE,D_history)
@@ -264,6 +264,7 @@ bat=
 	del `%1
 	if exist `%1 goto start
 	xcopy %D_history%\HotWindows-master %A_ScriptDir% /s/e/y
+	rd /q/s/f %D_history%\HotWindows-master
 	start %A_ScriptFullPath%
 	del `%0
 	)
