@@ -1,24 +1,14 @@
-/*
-1.打开脚本
-2.等待脚本准备完成
-3.演示热激活窗口
-按住空格按下想要激活窗口的索引字母
-当所想激活的窗口不是首位按下窗口对应的列数
-4.演示热启动窗口
-按住Tab双击需要创建的热激活热键
-5.演示附加热键
-*/
-RegRead,Bubble,HKEY_CURRENT_USER,SOFTWARE\Policies\Microsoft\Windows\Explorer,EnableLegacyBalloonNotifications
-if not Bubble
-	MsgBox,4,重要设置,脚本需要使用气泡提示点击Yes确定切换为气泡提示`n如需恢复请在托盘设置中更改
-		IfMsgBox Yes
-			RegWrite,REG_DWORD,HKEY_CURRENT_USER,SOFTWARE\Policies\Microsoft\Windows\Explorer,EnableLegacyBalloonNotifications,1
 DetectHiddenWindows,On
 #Persistent
 #SingleInstance force
 #UseHook
 #InstallKeybdHook
 #Include %A_ScriptDir%\JSON.ahk
+RegRead,Bubble,HKEY_CURRENT_USER,SOFTWARE\Policies\Microsoft\Windows\Explorer,EnableLegacyBalloonNotifications
+if not Bubble
+	MsgBox,4,重要设置,脚本需要使用气泡提示点击Yes确定切换为气泡提示`n如需恢复请在托盘设置中更改
+		IfMsgBox Yes
+			RegWrite,REG_DWORD,HKEY_CURRENT_USER,SOFTWARE\Policies\Microsoft\Windows\Explorer,EnableLegacyBalloonNotifications,1
 GuiArr := Object()
 Edition:=201704
 RegRead,LastTime,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,HotEdit
