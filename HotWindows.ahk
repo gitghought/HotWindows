@@ -223,8 +223,8 @@ Downloand:
 	Gui,Add,Progress, x10 y45 w300 h20 vMyProgress -Smooth
 	Gui, +ToolWindow +AlwaysOnTop
 	SysGet, m, MonitorWorkArea,1
-	x:=A_ScreenWidth-330
-	y:=A_ScreenHeight-110
+	x:=A_ScreenWidth-520
+	y:=A_ScreenHeight-180
 	Gui,Show,w320 x%x% y%y% , 文件下载
 	Gui +LastFound
 	SplitPath, URL, FN,,,, DN
@@ -239,7 +239,8 @@ Downloand:
 		VarZ_Save(binData, SAVE)
 		GuiControl, Text, Label1, 下载完成。
 		Sleep, 500
-		D_history=%A_ScriptDir%\history\%Edition%
+		FileCopy,%A_ScriptDir%,%A_ScriptDir%\history\%Edition%
+		D_history=%A_ScriptDir%\history\%time%
 		FileCreateDir,%D_history%
 		SmartZip(SAVE,D_history)
 		FileDelete,%SAVE%
