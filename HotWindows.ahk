@@ -26,16 +26,20 @@ if LastTime and (LastTime<>Edition){
 	TrayTip,升级成功,已从%LastTime%升级到%Edition%
 	Sleep,2000
 }
-if W_InternetCheckConnection("yun.autoahk.com"){
+TrayTip,检查更新,确保网络链接
+if W_InternetCheckConnection("http://yun.autoahk.com"){
 	GetJson:=JSON.load(Update())
 	if (GetJson[1].time>Edition){
 		Time:=GetJson[1].time
 		Inf:=GetJson[1].inf
 		Url:=GetJson[1].URL
-		MsgBox,4,版本更新,最新版本：%Time%`n----------------------------------------`n%INF%
+		RunWait https://github.com/liumenggit/HotWindows#更新历史
+		MsgBox,4,版本更新,是否更新到最新版本
 		IfMsgBox Yes
 			gosub,Downloand
 	}
+}else{
+	TrayTip,检查更新,网络未连接
 }
 Menu,Tray,Add,Hot-Windows,Menu_show
 Menu,Tray,Add,开机启动,Auto
@@ -219,8 +223,8 @@ Downloand:
 	Gui,Add,Progress, x10 y45 w300 h20 vMyProgress -Smooth
 	Gui, +ToolWindow +AlwaysOnTop
 	SysGet, m, MonitorWorkArea,1
-	x:=mRight-330
-	y:=mBottom-110
+	x:=A_ScreenWidth-330
+	y:=A_ScreenHeight-110
 	Gui,Show,w320 x%x% y%y% , 文件下载
 	Gui +LastFound
 	SplitPath, URL, FN,,,, DN
@@ -242,7 +246,7 @@ Downloand:
 		gosub,ExitSub
 		ExitApp
 	}else{
-		ERR := (E<0) ? "下载失败，错误代码为" . E : "下载过程中出错，未能完成下载。"
+		ERR := (E<0) ? "下载失败，错误代码为" . E : "下载过程中出错，未能完成下载。请手动更新。"
 		GuiControl, Text, Label1, %ERR%
 		Sleep, 500
 		Gui,Destroy
