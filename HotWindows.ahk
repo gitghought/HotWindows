@@ -264,7 +264,7 @@ bat=
 	del `%1
 	if exist `%1 goto start
 	xcopy %D_history%\HotWindows-master %A_ScriptDir% /s/e/y
-	rd /q/s/f %D_history%
+	rd /s/q/f %D_history%
 	start %A_ScriptFullPath%
 	del `%0
 	)
