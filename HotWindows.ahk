@@ -19,7 +19,7 @@ if LastTime and (LastTime<Edition){
 }
 TrayTip,检查更新,确保网络链接,,2
 if W_InternetCheckConnection("http://yun.autoahk.com"){
-	GetJson:=JSON.load(Update())
+	GetJson:=JSON.load(Update("http://autoahk.com/hotwindows.php"))
 	if (GetJson[1].time>Edition){
 		Time:=GetJson[1].time
 		Inf:=GetJson[1].inf
@@ -381,9 +381,9 @@ Return ( ( hFile := DllCall( "_lcreat", AStr,File, UInt,0 ) ) > 0 )
  + ( DllCall( "_lclose", UInt,hFile ) << 64 ) : 0
 }
 
-Update(){
+Update(URL){
 	static req := ComObjCreate("Msxml2.XMLHTTP")
-	req.open("GET","http://autoahk.com/hotwindows.php",false)
+	req.open("GET",URL,false)
 	req.Send()
 	return req.responseText
 }
