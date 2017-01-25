@@ -96,36 +96,37 @@ return
 
 Layout:
 if GetKeyState(key,"P"){
-	if (A_TimeSincePriorHotkey<"200") and (ThisHotkey=A_ThisHotkey){
-		StringReplace,ThisHotkey,A_ThisHotkey,~
-		RegRead,boss_exe,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,bossexe%ThisHotkey%
-		RegRead,boss_path,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,bosspath%ThisHotkey%
-		DetectHiddenWindows,Off
-		if boss_exe
+	;if (A_TimeSincePriorHotkey<"200") and (ThisHotkey=A_ThisHotkey){
+	StringReplace,ThisHotkey,A_ThisHotkey,~
+	RegRead,boss_exe,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,bossexe%ThisHotkey%
+	RegRead,boss_path,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,bosspath%ThisHotkey%
+	DetectHiddenWindows,Off
+	if boss_exe
+	{
+		IfWinActive,ahk_exe %boss_exe%
 		{
-			IfWinActive,ahk_exe %boss_exe%
-			{
-				RegDelete,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,bossexe%ThisHotkey%
-				RegDelete,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,bosspath%ThisHotkey%
-				TrayTip,,程序：%boss_exe%`n热键：%A_ThisHotkey%`n已删除,,1				
-				Sleep,1000
-			}else{
-				IfWinExist,ahk_exe %boss_exe%
-					WinActivate,ahk_exe %boss_exe%
-				else
-					Run,%boss_path%,,,RunPid
-			}
-		}else{
-			WinGet,boss_exe,ProcessName,A
-			WinGet,boss_path,ProcessPath,A
-			RegWrite,REG_SZ,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,bossexe%ThisHotkey%,%boss_exe%
-			RegWrite,REG_SZ,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,bosspath%ThisHotkey%,%boss_path%
-			TrayTip,,程序：%boss_exe%`n热键：%A_ThisHotkey%,,1
-			WinMinimize A
+			;WinMinimize,ahk_exe %boss_exe%
+			RegDelete,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,bossexe%ThisHotkey%
+			RegDelete,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,bosspath%ThisHotkey%
+			TrayTip,,程序：%boss_exe%`n热键：%A_ThisHotkey%`n已删除,,1				
 			Sleep,1000
+		}else{
+			IfWinExist,ahk_exe %boss_exe%
+				WinActivate,ahk_exe %boss_exe%
+			else
+				Run,%boss_path%,,,RunPid
 		}
-		DetectHiddenWindows,On
+	}else{
+		WinGet,boss_exe,ProcessName,A
+		WinGet,boss_path,ProcessPath,A
+		RegWrite,REG_SZ,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,bossexe%ThisHotkey%,%boss_exe%
+		RegWrite,REG_SZ,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,bosspath%ThisHotkey%,%boss_path%
+		TrayTip,,程序：%boss_exe%`n热键：%A_ThisHotkey%,,1
+		WinMinimize A
+		Sleep,1000
 	}
+	DetectHiddenWindows,On
+	;}
 }
 if GetKeyState(Hot,"P"){
 	StringReplace,ThisHotkey,A_ThisHotkey,~
@@ -445,7 +446,7 @@ GetArray(){
 	Array := Object()
 	TrayTip,程序正在准备,,,2
 	DetectHiddenWindows,Off
-	WinGet,id,List
+	WinGet,id,List,,, Program Manager
 	DetectHiddenWindows,On
 	loop,%id%
 	{
