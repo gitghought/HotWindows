@@ -1,5 +1,5 @@
-#Persistent
 DetectHiddenWindows,On
+#Persistent
 #SingleInstance force
 #UseHook
 #InstallKeybdHook
@@ -10,14 +10,14 @@ if not Bubble
 		IfMsgBox Yes
 			RegWrite,REG_DWORD,HKEY_CURRENT_USER,SOFTWARE\Policies\Microsoft\Windows\Explorer,EnableLegacyBalloonNotifications,1
 GuiArr := Object()
-Edition:=201704
+Edition:=201705
 RegRead,LastTime,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,HotEdit
 RegWrite,REG_SZ,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,HotEdit,%Edition%
-if LastTime and (LastTime<>Edition){
-	TrayTip,升级成功,已从%LastTime%升级到%Edition%
+if LastTime and (LastTime<Edition){
+	TrayTip,升级成功,已从%LastTime%升级到%Edition%,,1
 	Sleep,2000
 }
-TrayTip,检查更新,确保网络链接
+TrayTip,检查更新,确保网络链接,,2
 if W_InternetCheckConnection("http://yun.autoahk.com"){
 	GetJson:=JSON.load(Update())
 	if (GetJson[1].time>Edition){
@@ -73,7 +73,7 @@ Hot:=GuiArr["Hot"]
 Layout=qwertyuiopasdfghjklzxcvbnm
 Loop,Parse,Layout
 	Hotkey,%A_LoopField%,Layout
-TrayTip,HotWindows,程序已经做好准备`n点击托盘图标设置,1
+TrayTip,HotWindows,程序已经做好准备`n点击托盘图标设置,,1
 loop{
 	WinGet,WinGet_ID,ID,A
 	WinGet,getexe,ProcessName,ahk_id %WinGet_ID%
@@ -105,7 +105,10 @@ if GetKeyState(key,"P"){
 		{
 			IfWinActive,ahk_exe %boss_exe%
 			{
-				WinMinimize
+				RegDelete,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,bossexe%ThisHotkey%
+				RegDelete,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,bosspath%ThisHotkey%
+				TrayTip,,程序：%boss_exe%`n热键：%A_ThisHotkey%`n已删除,,1				
+				Sleep,1000
 			}else{
 				IfWinExist,ahk_exe %boss_exe%
 					WinActivate,ahk_exe %boss_exe%
@@ -117,8 +120,9 @@ if GetKeyState(key,"P"){
 			WinGet,boss_path,ProcessPath,A
 			RegWrite,REG_SZ,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,bossexe%ThisHotkey%,%boss_exe%
 			RegWrite,REG_SZ,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,bosspath%ThisHotkey%,%boss_path%
-			TrayTip,,程序：%boss_exe%`n热键：%A_ThisHotkey%
+			TrayTip,,程序：%boss_exe%`n热键：%A_ThisHotkey%,,1
 			WinMinimize A
+			Sleep,1000
 		}
 		DetectHiddenWindows,On
 	}
@@ -155,7 +159,11 @@ if GetKeyState(Hot,"P"){
 	if (vars="1")
 		goto,WaitHot
 }else{
-	Send %A_ThisHotkey%
+	if GetKeyState("CapsLock","T")
+		StringUpper,ThisHotkey,A_ThisHotkey
+	else
+		ThisHotkey:=A_ThisHotkey
+	Send %ThisHotkey%
 	TrayTip
 	Hots:=
 }
