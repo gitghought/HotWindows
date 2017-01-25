@@ -219,10 +219,15 @@ ExitApp:
 
 Submit:
 Gui,Submit,NoHide
-if (DDL1=DDL2)
+if (DDL1=DDL2){
 	TrayTip,HotWindows,热启动与热激活热键不可相同,,3
-else
-	Gui_Submit("1")
+	return
+}
+Gui_Submit("1")
+Gui_Submit("0")
+Key:=GuiArr["Key"]
+Hot:=GuiArr["Hot"]
+MsgBox % Key "`n" Hot
 return
 
 Menu_show:
