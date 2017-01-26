@@ -73,7 +73,7 @@ Hot:=GuiArr["Hot"]
 Layout=qwertyuiopasdfghjklzxcvbnm
 Loop,Parse,Layout
 	Hotkey,%A_LoopField%,Layout
-TrayTip,HotWindows,程序已经做好准备`n点击托盘图标设置,,1
+TrayTip,HotWindows,程序已经做好准备`n点击托盘图标设置`n当前版本：%Edition%,,1
 loop{
 	WinGet,WinGet_ID,ID,A
 	WinGet,getexe,ProcessName,ahk_id %WinGet_ID%
