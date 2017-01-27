@@ -10,15 +10,15 @@ if not Bubble
 		IfMsgBox Yes
 			RegWrite,REG_DWORD,HKEY_CURRENT_USER,SOFTWARE\Policies\Microsoft\Windows\Explorer,EnableLegacyBalloonNotifications,1
 GuiArr := Object()
-Edition:=201705
+Edition:=201706
 RegRead,LastTime,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,HotEdit
 RegWrite,REG_SZ,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,HotEdit,%Edition%
 if LastTime and (LastTime<Edition){
 	TrayTip,升级成功,已从%LastTime%升级到%Edition%,,1
 	Sleep,2000
 }
-TrayTip,检查更新,确保网络链接,,2
-if W_InternetCheckConnection("http://yun.autoahk.com"){
+if W_InternetCheckConnection("https://github.com"){
+	TrayTip,检查更新,确保网络联通,,1
 	GetJson:=JSON.load(Update("http://autoahk.com/hotwindows.php"))
 	if (GetJson[1].time>Edition){
 		Time:=GetJson[1].time
@@ -30,7 +30,7 @@ if W_InternetCheckConnection("http://yun.autoahk.com"){
 			gosub,Downloand
 	}
 }else{
-	TrayTip,检查更新,网络未连接
+	TrayTip,检查更新,网络未连接,,3
 }
 Menu,Tray,Add,Hot-Windows,Menu_show
 Menu,Tray,Add,开机启动,Auto
@@ -40,18 +40,22 @@ Menu,Tray,Add,退出脚本,ExitApp
 Menu,Tray,Default,Hot-Windows
 Menu,Tray,NoStandard
 
-Gui,+HwndMyGuiHwnd -MaximizeBox
-Gui,Add,Text,,热激活
-Gui,Add,Edit,vDDL1
-Gui,Add,Text,,热启动
-Gui,Add,Edit,vDDL2
-Gui,Add,Text,,最小化热键
-Gui,Add,Hotkey,vWinmin
-Gui,Add,Text,,最大化热键
-Gui,Add,Hotkey,vWinmax
-Gui,Add,Text,,剧中热键
-Gui,Add,Hotkey,vWinmove
-Gui,Add,Button,gSubmit w135,保存配置
+Gui,PS:+HwndMyGuiHwnd -MaximizeBox -MinimizeBox
+Gui,PS:Add,Text,,热激活
+Gui,PS:Add,DDL,vDDL1 AltSubmit
+Gui,PS:Add,Text,,热启动
+Gui,PS:Add,DDL,vDDL2 AltSubmit
+Gui,PS:Add,Text,,显示方式
+Gui,PS:Add,DDL,vDDL3 AltSubmit
+Gui,PS:Add,Text,,最小化热键
+Gui,PS:Add,Hotkey,vWinmin
+Gui,PS:Add,Text,,最大化热键
+Gui,PS:Add,Hotkey,vWinmax
+Gui,PS:Add,Text,,剧中热键
+Gui,PS:Add,Hotkey,vWinmove
+Gui,PS:Add,Button,gSubmit w135,保存配置
+Gui,+AlwaysOnTop +ToolWindow -Caption -MaximizeBox -MinimizeBox
+Gui,Add,ListView,w600 R9,ID|Title
 RegRead,Bubble,HKEY_CURRENT_USER,SOFTWARE\Policies\Microsoft\Windows\Explorer,EnableLegacyBalloonNotifications
 RegRead,HotRun,HKEY_CURRENT_USER,Software\Microsoft\Windows\CurrentVersion\Run,HotRun
 if Bubble
@@ -61,15 +65,14 @@ IfExist,%HotRun%
 	RegWrite,REG_SZ,HKEY_CURRENT_USER,Software\Microsoft\Windows\CurrentVersion\Run,HotRun,%A_ScriptFullPath%
 	Menu,Tray,ToggleCheck,开机启动
 }
-;启动做准备
 tcmatch := "Tcmatch.dll"
 hModule := DllCall("LoadLibrary", "Str", tcmatch, "Ptr")
-Arrays:=GetArray()
-;注册热键
 Gui_Submit("0")
-Sleep,200
-Key:=GuiArr["Key"]
-Hot:=GuiArr["Hot"]
+Sleep,199
+Hot:=GuiArr["DDL1"]
+Key:=GuiArr["DDL2"]
+DDL:=GuiArr["DDL3"]
+Arrays:=GetArray()
 Layout=qwertyuiopasdfghjklzxcvbnm
 Loop,Parse,Layout
 	Hotkey,%A_LoopField%,Layout
@@ -90,7 +93,7 @@ loop{
 			Arrays.Delete(k)
 		IfWinNotExist,%k%
 			Arrays.Delete(k)
-}
+	}
 }
 return
 
@@ -109,7 +112,6 @@ if GetKeyState(key,"P"){
 			RegDelete,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,bossexe%ThisHotkey%
 			RegDelete,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,bosspath%ThisHotkey%
 			TrayTip,,程序：%boss_exe%`n热键：%A_ThisHotkey%`n已删除,,1				
-			Sleep,1000
 		}else{
 			IfWinExist,ahk_exe %boss_exe%
 				WinActivate,ahk_exe %boss_exe%
@@ -123,7 +125,6 @@ if GetKeyState(key,"P"){
 		RegWrite,REG_SZ,HKEY_LOCAL_MACHINE,SOFTWARE\TestKey,bosspath%ThisHotkey%,%boss_path%
 		TrayTip,,程序：%boss_exe%`n热键：%A_ThisHotkey%,,1
 		WinMinimize A
-		Sleep,1000
 	}
 	DetectHiddenWindows,On
 	;}
@@ -132,32 +133,27 @@ if GetKeyState(Hot,"P"){
 	StringReplace,ThisHotkey,A_ThisHotkey,~
 	Hots = %Hots%%ThisHotkey%
 	vars := StrLen(Hots)
-	list :=
+	lists := Object()
+	listv := Object()
 	marry :=
-	if (vars="1"){
-		lists := Object()
+	if vars=1
 		loop,9{
 			Hotkey,%A_Index%,Table
 			Hotkey,%A_Index%,On
 		}
-	}
 	for k,v in Arrays{
 		if (matched := DllCall("Tcmatch\MatchFileW","WStr",Hots,"WStr",k)){
 			marry++
-			if marry>9
-				list=%list%`n%k%
-			else
-				list=%list%`n%marry%-%k%
-			lists[marry]:=v
+			lists[k]:=v
+			listv[marry]:=v
 		}
 	}
 	if marry{
-		list := Trim(list,"`n")
-		TrayTip,,%list% ; `n %A_ThisHotkey% `n %hots% `n %vars% `n %marry%
+		ListViewAdd(lists)
 		if (marry="1")
 			Activate("1")
 	}
-	if (vars="1")
+	if vars=1
 		goto,WaitHot
 }else{
 	if GetKeyState("CapsLock","T")
@@ -165,11 +161,36 @@ if GetKeyState(Hot,"P"){
 	else
 		ThisHotkey:=A_ThisHotkey
 	Send %ThisHotkey%
-	TrayTip
+	Cancel()
 	Hots:=
 }
 	ThisHotkey:=A_ThisHotkey
 return
+
+ListViewAdd(ls){
+	global DDL
+	if DDL=ListView
+	{
+		GuiControl,-Redraw,MyListView
+		LV_Delete()
+		WinAll:= ls.MaxIndex()
+		ImageListID := IL_Create(WinAll)
+		LV_SetImageList(ImageListID)
+		For k,v in ls
+		{
+			WinGet,Route,ProcessPath,ahk_id %v%
+			LV_Add("Icon" . IL_Add(ImageListID,Route,1),A_Index,k)
+		}
+		LV_ModifyCol()
+		GuiControl,+Redraw,MyListView
+		Gui,Show
+	}else{
+		For k,v in ls
+			list=%list%`n%A_index%-%k%
+		list := Trim(list,"`n")
+		TrayTip,,%list% ; `n %A_ThisHotkey% `n %hots% `n %vars% `n %marry%
+	}
+}
 
 WaitHot:
 	KeyWait,%Hot%,L
@@ -225,17 +246,18 @@ if (DDL1=DDL2){
 }
 Gui_Submit("1")
 Gui_Submit("0")
-Key:=GuiArr["Key"]
-Hot:=GuiArr["Hot"]
-MsgBox % Key "`n" Hot
+Hot:=GuiArr["DDL1"]
+Key:=GuiArr["DDL2"]
+DDL:=GuiArr["DDL3"]
+TrayTip,HotWindows,设置已记录,,1
 return
 
 Menu_show:
 DetectHiddenWindows,Off
 IfWinNotExist,ahk_id %MyGuiHwnd%
-	Gui,Show
+	Gui,PS:Show
 else
-	Gui,Cancel
+	Gui,PS:Cancel
 DetectHiddenWindows,On
 return
 
@@ -395,7 +417,7 @@ Update(URL){
 }
 
 Gui_Submit(Access){
-	Gui,Submit,NoHide
+	Gui,PS:Submit,NoHide
 	IniRead,IniList,%A_ScriptDir%\ini.ini
 	global GuiArr
 	Loop,Parse,IniList,`n
@@ -417,12 +439,16 @@ Gui_Submit(Access){
 			if (Gui_Way="Hotkey"){
 				Hotkey,%Gui_Key%,%Gui_Label%
 				Hotkey,%Gui_Key%,On
+				GuiControl,PS:,%A_LoopField%,%Gui_Key%
 			}
-			if (Gui_Way="var"){
+			if (Gui_Way="DDL"){
 				IniRead,Gui_var,%A_ScriptDir%\ini.ini,%A_LoopField%,var
-				GuiArr[Gui_var]:=Gui_Key
+				GuiControl,PS:,%A_LoopField%,|%Gui_var%
+				GuiControl,PS:Choose,%A_LoopField%,%Gui_Key%
+				StringSplit,String,Gui_var,|
+				GuiArr[A_LoopField]:=String%Gui_Key%
+				;MsgBox % Gui_Way "`n" Gui_Key "`n" A_LoopField "`n" Gui_var "`n" GuiArr[A_LoopField]
 			}
-			GuiControl,,%A_LoopField%,%Gui_Key%
 		}
 	}
 	return
@@ -430,9 +456,10 @@ Gui_Submit(Access){
 
 Activate(Ranking){
 	global lists
+	global listv
 	global Hots
 	global Arrays
-	Activate:=lists[Ranking]
+	Activate:=listv[Ranking]
 	WinActivate,ahk_id %Activate%
 	loop,9
 		Hotkey,%A_Index%,off
@@ -443,9 +470,18 @@ Activate(Ranking){
 			Arrays.Delete(k)
 	}
 	Hots:=
-	TrayTip
+	Cancel()
 	return
 }
+
+Cancel(){
+	global DDL	
+	if DDL=ListView
+		Gui,Cancel
+	else
+		TrayTip
+}
+
 
 GetArray(){
 	Array := Object()
