@@ -53,6 +53,7 @@ Gui,PS:Add,Text,,最大化热键
 Gui,PS:Add,Hotkey,vWinmax
 Gui,PS:Add,Text,,剧中热键
 Gui,PS:Add,Hotkey,vWinmove
+Gui,PS:Add,Checkbox,vCheck,启动输入保护
 Gui,PS:Add,Button,gSubmit w135,保存配置
 Gui,+AlwaysOnTop +ToolWindow -Caption -MaximizeBox -MinimizeBox
 Gui,Add,ListView,w600 R9,ID|Title
@@ -72,6 +73,7 @@ Sleep,199
 Hot:=GuiArr["DDL1"]
 Key:=GuiArr["DDL2"]
 DDL:=GuiArr["DDL3"]
+Check:=GuiArr["Check"]
 Arrays:=GetArray()
 Layout=qwertyuiopasdfghjklzxcvbnm
 Loop,Parse,Layout
@@ -153,7 +155,9 @@ if GetKeyState(Hot,"P"){
 		if (marry="1")
 			Activate("1")
 	}
-	if vars=1
+	if (Check="1") and (vars="2")
+		goto,WaitHot
+	if (Check="0") and (vars="1")
 		goto,WaitHot
 }else{
 	if GetKeyState("CapsLock","T")
@@ -249,13 +253,14 @@ Gui_Submit("0")
 Hot:=GuiArr["DDL1"]
 Key:=GuiArr["DDL2"]
 DDL:=GuiArr["DDL3"]
+Check:=GuiArr["Check"]
 TrayTip,HotWindows,设置已记录,,1
 return
 
 Menu_show:
 DetectHiddenWindows,Off
 IfWinNotExist,ahk_id %MyGuiHwnd%
-	Gui,PS:Show
+	Gui,PS:Show,,HotWindows
 else
 	Gui,PS:Cancel
 DetectHiddenWindows,On
@@ -412,7 +417,9 @@ Return ( ( hFile := DllCall( "_lcreat", AStr,File, UInt,0 ) ) > 0 )
 Update(URL){
 	static req := ComObjCreate("Msxml2.XMLHTTP")
 	req.open("GET",URL,false)
-	req.Send()
+	try req.Send()
+	catch e
+		return
 	return req.responseText
 }
 
@@ -440,6 +447,10 @@ Gui_Submit(Access){
 				Hotkey,%Gui_Key%,%Gui_Label%
 				Hotkey,%Gui_Key%,On
 				GuiControl,PS:,%A_LoopField%,%Gui_Key%
+			}
+			if (Gui_Way="VAR"){
+				GuiControl,PS:,%A_LoopField%,%Gui_Key%
+				GuiArr[A_LoopField]:=Gui_Key
 			}
 			if (Gui_Way="DDL"){
 				IniRead,Gui_var,%A_ScriptDir%\ini.ini,%A_LoopField%,var
