@@ -3,7 +3,6 @@ DetectHiddenWindows,On
 #SingleInstance force
 #UseHook
 #InstallKeybdHook
-#Include %A_ScriptDir%\JSON.ahk
 SetBatchLines -1
 
 ;<<<<<<<<<<<<默认值>>>>>>>>>>>>
@@ -81,16 +80,23 @@ if LastTime and (LastTime<Edition){
 ;<<<<<<<<<<<<检查更新>>>>>>>>>>>>
 if W_InternetCheckConnection("https://github.com"){
 	TrayTip,检查更新,确保网络联通,,1
-	GetJson:=JSON.load(Update("http://autoahk.com/hotwindows.php"))
-	if (GetJson[1].time>Edition){
-		Time:=GetJson[1].time
-		Inf:=GetJson[1].inf
-		Url:=GetJson[1].URL
-		RunWait https://github.com/liumenggit/HotWindows#更新历史
-		MsgBox,4,版本更新,是否更新到最新版本：%Time%`n%Inf%
+	whr := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+	whr.Open("GET","https://raw.githubusercontent.com/liumenggit/HotWindows/master/README.md",false)
+	whr.Send()
+	whr.WaitForResponse()
+	RegExMatch(whr.ResponseText,"\b\d{6}\b",NewEdition)
+	if (NewEdition>Edition){
+		MsgBox,4,版本更新,是否更新到最新版本：%NewEdition%
 		IfMsgBox Yes
+		{
+			RunWait https://github.com/liumenggit/HotWindows#更新历史
 			gosub,Downloand
+		}
+	}else{
+		TrayTip,检查更新,暂无更新,,1
 	}
+}else{
+	TrayTip,检查更新,网络无法联通,,2
 }
 
 ;<<<<<<<<<<<<声明全局变量>>>>>>>>>>>>
@@ -616,4 +622,13 @@ Update(URL){
 	catch e
 		return
 	return req.responseText
+}
+
+RegExMatchAll(ByRef Haystack, NeedleRegEx, SubPat="") {		;正则表达式
+	arr := [], startPos := 1
+	while ( pos := RegExMatch(Haystack, NeedleRegEx, match, startPos) ) {
+	arr.push(match%SubPat%)
+	startPos := pos + StrLen(match)
+}
+return arr.MaxIndex() ? arr : ""
 }
