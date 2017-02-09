@@ -3,6 +3,7 @@ DetectHiddenWindows,On
 #SingleInstance force
 #UseHook
 #InstallKeybdHook
+#ErrorStdOut
 SetBatchLines -1
 
 ;<<<<<<<<<<<<默认值>>>>>>>>>>>>
@@ -16,7 +17,6 @@ if not Bubble
 	MsgBox,4,重要设置,脚本需要使用气泡提示点击Yes确定切换为气泡提示`n如需恢复请在托盘设置中更改
 		IfMsgBox Yes
 			RegWrite,REG_DWORD,HKEY_CURRENT_USER,SOFTWARE\Policies\Microsoft\Windows\Explorer,EnableLegacyBalloonNotifications,1
-TrayTip,HotWindows,正在准备请等待准备完成,,2
 ;<<<<<<<<<<<<预设与配置>>>>>>>>>>>>
 Show_modes=TrayTip,ListView
 Hot_keys=Space,Tab
@@ -30,6 +30,11 @@ Menu,Tray,Add,输入保护,Boot
 Menu,Tray,Add
 Menu,Tray,Add,显示方式,:Show_mode
 Menu,Tray,Add,激活热键,:Hot_key
+Menu,Dele_mdb,Add,清除窗口记录,Dele_mdb_Gui
+Menu,Dele_mdb,Add,清除程序记录,Dele_mdb_Exe
+Menu,Dele_mdb,Add,清除样式记录,Dele_mdb_Style
+Menu,Dele_mdb,Add,清除所有记录,Dele_mdb
+Menu,Tray,Add,清除样式,:Dele_mdb
 Menu,Tray,Add,添加程序,Add_exe
 Menu,Tray,Add
 Menu,Tray,Add,重启脚本,Reload
@@ -37,6 +42,7 @@ Menu,Tray,Add,退出脚本,ExitApp
 Menu,Tray,Icon,显示方式,shell32.dll,90
 Menu,Tray,Icon,激活热键,shell32.dll,318
 Menu,Tray,Icon,添加程序,shell32.dll,138
+Menu,Tray,Icon,清除样式,shell32.dll,260
 Menu,Tray,Icon,重启脚本,shell32.dll,239
 Menu,Tray,Icon,退出脚本,shell32.dll,132
 Menu,Tray,NoStandard
@@ -47,6 +53,10 @@ RegRead,Show_mode,HKEY_CURRENT_USER,HotWindows,HotShow_mode	;显示方式
 RegRead,Hot_key,HKEY_CURRENT_USER,HotWindows,HotHot_key	;激活热键
 RegRead,Boot,HKEY_CURRENT_USER,HotWindows,Hotboot	;输入保护
 RegRead,Styles,HKEY_CURRENT_USER,HotWindows,HotStyles	;样式列表
+RegRead,Path_list,HKEY_CURRENT_USER,HotWindows,Path_list	;自定义程序添加规则
+if not Path_list
+	RegWrite,REG_SZ,HKEY_CURRENT_USER,HotWindows,Path_list,%A_Desktop%\*.lnk`n
+RegRead,Path_list,HKEY_CURRENT_USER,HotWindows,Path_list	;自定义程序添加规则
 if not Styles
 	Styles=0x860F0000,0x860E0000,0x36CF0000,0x17CF0000,0x84C80000,0xB4CF0000,0x94CA0000,0x95CF0000,0x94CF0000	;默认匹配的样式
 if not Hot_key{
@@ -93,14 +103,14 @@ if W_InternetCheckConnection("https://github.com"){
 			gosub,Downloand
 		}
 	}else{
-		TrayTip,检查更新,暂无更新,,1
+		additional=`n暂无更新
 	}
 }else{
-	TrayTip,检查更新,网络无法联通,,2
+	additional=`n网络链接出错
 }
 
 ;<<<<<<<<<<<<声明全局变量>>>>>>>>>>>>
-global Styles,Path_data,Show_mode,Key_History,WHERE_list
+global Styles,Path_data,Show_mode,Key_History,WHERE_list,Path_list
 
 ;<<<<<<<<<<<<DLL载入>>>>>>>>>>>>
 tcmatch := "Tcmatch.dll"
@@ -116,7 +126,7 @@ ListWidth:=Width/4
 
 ;<<<<<<<<<<<<GUI>>>>>>>>>>>>
 Gui,+AlwaysOnTop +Border -SysMenu +ToolWindow +LastFound +HwndMyGuiHwnd
-Gui,Add,ListView,w%ListWidth% r9 xm ym,编号|标题
+Gui,Add,ListView,w%ListWidth% r9 xm ym AltSubmit gHot_ListView,编号|标题	;
 Gui,Add,StatusBar
 WinSet,Transparent,200,ahk_id %MyGuiHwnd%
 
@@ -133,6 +143,7 @@ IfNotExist,%Path_data%
 	SQL_Run("DELETE FROM Now_list")
 }
 
+TrayTip,HotWindows,正在准备请等待准备完成%additional%,,2
 ;<<<<<<<<<<<<加载列表>>>>>>>>>>>>
 Load_list()	;创建初始程列表
 TrayTip,HotWindows,准备完成开始使用`,右键托盘设置热键.`n捐赠支付宝：rrsyycm@163.com,,1
@@ -141,7 +152,9 @@ loop{
 	WinGet,Wina_ID,ID,A
 	WinGet,Exe_Name,ProcessName,ahk_id %Wina_id%
 	WinGet,Get_Style,Style,ahk_id %Wina_id%
-	if GetStyle not in %Styles%
+	WinGetTitle,Title,ahk_id %Wina_id%
+	;IfNotInString,Styles,GetStyle
+	if Get_Style not in %Styles%
 	{
 		Styles=%Styles%`,%Get_Style%
 		RegWrite,REG_SZ,HKEY_CURRENT_USER,HotWindows,HotStyles,%Styles%
@@ -155,8 +168,7 @@ Return
 ;<<<<<<<<<<<<主要功能的标签>>>>>>>>>>>>
 Layout:
 if GetKeyState(HotWindows,"P"){
-	StringReplace,ThisHotkey,A_ThisHotkey,~
-	Key_History = %Key_History%%ThisHotkey%
+	Key_History = %Key_History%%A_ThisHotkey%
 	StrLens := StrLen(Key_History)
 	if StrLens=1
 		loop,9{
@@ -171,8 +183,6 @@ if GetKeyState(HotWindows,"P"){
 			Send {Space Up}
 		}
 	}else{
-		loop,9
-			Hotkey,%A_Index%,off
 		Cancel()
 	}
 	if (Boot="1") and (StrLens="1")
@@ -180,9 +190,7 @@ if GetKeyState(HotWindows,"P"){
 			StringUpper,PriorHotke,A_ThisHotkey
 		else
 			PriorHotke:=A_ThisHotkey
-	if (Boot="1") and (StrLens="2")
-		goto,Key_wait
-	if (Boot="0") and (StrLens="1")
+	if StrLens=1
 		goto,Key_wait
 }else{
 	Cancel()
@@ -196,7 +204,6 @@ if GetKeyState(HotWindows,"P"){
 		ThisHotkey:=A_ThisHotkey
 	Send %ThisHotkey%
 }
-ThisHotkey:=A_ThisHotkey
 Return
 
 Table:
@@ -205,19 +212,42 @@ Return
 
 Key_wait:
 	KeyWait,%HotWindows%,L
-	if Key_History
-		Activate("1")
+	if (EventInfo<>"0") and (Show_mode="ListView"){
+		if Key_History
+			Activate(EventInfo)
+		Return
+	}
+	if (Boot="1") and (StrLens="1")	;开启了输入保护什么也没有发生
+		Cancel()
+	if (Boot="0")	;没有开启输入保护激活第一个
+		if Key_History
+			Activate("1")
+	if (Boot="1") and (StrLens>"1")	;开启了输入保护发生了事情
+		if Key_History
+			Activate("1")
 Return
 
 Add_exe:
 Gui,New
 Gui,Add_exe:New
 Gui,Add_exe:+LabelMyAdd +ToolWindow +AlwaysOnTop
-Gui,Add_exe:Add,ListView,w%ListWidth% vAdd_list r9 xm ym,名称|路径
-Gui,Add_exe:Add,Text,xm Section,添加程序请将文件拖入本窗口
-Gui,Add_exe:Add,Button,ys gDele_exe,删除选择程序(&D)
+Gui,Add_exe:Add,Text,xm,添加程序请将文件拖入本窗口
+Gui,Add_exe:Add,ListView,xm w%ListWidth% vAdd_list r9,名称|路径
+Gui,Add_exe:Add,Text,xm,此处添加程序目录c:\Users\*.exe或c:\Users\*.lnk
+Gui,Add_exe:Add,Edit,xm w%ListWidth% r5 vPath_list,%Path_list%
+Gui,Add_exe:Add,Button,xm Section gDele_exe,删除选择程序(&D)
+Gui,Add_exe:Add,Button,ys gSubmit_exe,保存规则(&S)
 Gui,Add_exe:Show,,添加程序到热启动列表
 Add_list()
+Return
+
+Submit_exe:
+	TrayTip,HotWindows,等待操作完成,,1
+	Gui,Submit,NoHide
+	RegWrite,REG_SZ,HKEY_CURRENT_USER,HotWindows,Path_list,%Path_list%
+	Load_list()
+	Add_list()
+	TrayTip,HotWindows,保存完成,,1
 Return
 
 Dele_exe:
@@ -247,6 +277,10 @@ Loop,Parse,A_GuiEvent,`n
 Add_list()
 TrayTip,HotWindows,添加完成,,1
 Return
+
+Hot_ListView:
+EventInfo:=LV_GetNext()
+Return
 ;<<<<<<<<<<<<窗口函数>>>>>>>>>>>>
 Add_list(){
 	Recordset := ComObjCreate("ADODB.Recordset")
@@ -273,8 +307,6 @@ Activate(WHERE_time){
 		Try Run %Path%
 		catch e
 			Return
-	loop,9
-		Hotkey,%A_Index%,off
 	if not Sql_Get("SELECT Times FROM Activate WHERE Title='" Title "'")
 		SQL_Run("Insert INTO Activate (Title,Times) VALUES ('" Title "','1')")
 	else
@@ -282,7 +314,11 @@ Activate(WHERE_time){
 }
 
 Cancel(){
+	if Key_History
+		loop,9
+			Hotkey,%A_Index%,off
 	Key_History:=
+	loop,9
 	if Show_mode=ListView
 		Gui,Cancel
 	else
@@ -345,20 +381,42 @@ Load_list(){
 			SQL_Run("DELETE FROM Quick WHERE Path='" Quick_Path "'")
 		Recordset.MoveNext()
 	}
+	loop,Parse,Path_list,`n
+	{
+		loop,%A_LoopField%
+		{
+			SplitPath,A_LoopFileLongPath,OutFileName,OutDir,OutExtension,OutNameNoExt,OutDrive
+			Path_Add:=A_LoopFileLongPath
+			;if OutExtension=lnk
+			;{
+			;	FileGetShortcut,%A_LoopFileLongPath%,Path_Add
+			;	SplitPath,Path_Add,OutFileName,OutDir,OutExtension,OutNameNoExt,OutDrive
+			;}
+			if not Sql_Get("SELECT COUNT(*) FROM Quick WHERE Path='" Path_Add "'")
+			{
+				SQL_Run("DELETE FROM Quick WHERE Title='" OutNameNoExt "'")
+				SQL_Run("Insert INTO Quick (Title,Path) VALUES ('" OutNameNoExt "','" Path_Add "')")
+			}
+		}
+	}
 }
 Load_exe(Exe_Name){
+	if not Exe_Name
+		return
 	SQL_Run("DELETE FROM Now_list WHERE Path LIKE '%" Exe_Name "'")
 	WinGet,WinList,List,ahk_exe %Exe_Name%
 	WinGet,Path,ProcessPath,ahk_exe %Exe_Name%
+	WinGet,Get_Style,Style,ahk_id %Exe_Name%
 	SplitPath,Path,OutFileName,OutDir,OutExtension,OutNameNoExt,OutDrive
 	;Windowsvar=C:\Windows\
 	;IfNotInString,Path,%Windowsvar%
-	if GetIconCount(Path)
-		if not Sql_Get("SELECT COUNT(*) FROM Quick WHERE Path='" Path "'")
-		{
-			SQL_Run("DELETE FROM Quick WHERE Title='" OutNameNoExt "'")
-			SQL_Run("Insert INTO Quick (Title,Path) VALUES ('" OutNameNoExt "','" Path "')")
-		}
+	if Get_Style in %Styles%
+		if GetIconCount(Path)
+			if not Sql_Get("SELECT COUNT(*) FROM Quick WHERE Path='" Path "'")
+			{
+				SQL_Run("DELETE FROM Quick WHERE Title='" OutNameNoExt "'")
+				SQL_Run("Insert INTO Quick (Title,Path) VALUES ('" OutNameNoExt "','" Path "')")
+			}
 	loop,%WinList% {
 		PID:=WinList%A_Index%
 		WinGet,GetStyle,Style,ahk_id %PID%
@@ -431,6 +489,39 @@ RegRead,Boot,HKEY_CURRENT_USER,HotWindows,Hotboot	;输入保护
 Menu,Tray,ToggleCheck,输入保护
 Return
 
+Dele_mdb:
+	TrayTip,HotWindows,等待操作完成,,1
+	SQL_Run("DELETE FROM Activate")
+	SQL_Run("DELETE FROM Now_list")
+	SQL_Run("DELETE FROM Quick")
+	RegDelete,HKEY_CURRENT_USER,HotWindows,HotStyles
+	RegDelete,HKEY_CURRENT_USER,HotWindows,Path_list
+	Load_list()
+	TrayTip,HotWindows,已经清除所有记录,,1
+Return
+
+Dele_mdb_Gui:
+	TrayTip,HotWindows,等待操作完成,,1
+	SQL_Run("DELETE FROM Activate")
+	Load_list()
+	TrayTip,HotWindows,已经清除窗口记录,,1
+Return
+
+Dele_mdb_Exe:
+	TrayTip,HotWindows,等待操作完成,,1
+	SQL_Run("DELETE FROM Quick")
+	RegDelete,HKEY_CURRENT_USER,HotWindows,Path_list
+	Load_list()
+	TrayTip,HotWindows,已经清除程序记录,,1
+Return
+
+Dele_mdb_Style:
+	TrayTip,HotWindows,等待操作完成,,1
+	RegDelete,HKEY_CURRENT_USER,HotWindows,HotStyles
+	Load_list()
+	TrayTip,HotWindows,已经清除样式记录,,1
+Return
+
 Reload:
 	Reload
 ExitApp:
@@ -460,10 +551,12 @@ SQL_Run(SQL){	;向数据库运行命令
 }
 SQL_Get(SQL){	;向数据库运行命令请求返回
 	Recordset := ComObjCreate("ADODB.Recordset")
-	Recordset.Open(SQL,"Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" . Path_data . "")
+	Try Recordset.Open(SQL,"Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" . Path_data . "")
+	catch e
+		Return 0
 	Try Return Recordset.Fields[0].Value
 	catch e
-		Return
+		Return 0
 }
 
 ;<<<<<<<<<<<<更新功能>>>>>>>>>>>>
