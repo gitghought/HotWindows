@@ -7,7 +7,7 @@
 ## HotWindows如何使用？
 
 ### 热激活功能
-开启脚本后等待托盘区提示准备完成，<br>![](https://github.com/liumenggit/pic/raw/master/HotWindowszbwc.gif)<br>功能为利用窗口标题字母索引窗口/程序，例如激活AutoHotkey高级群窗口，则按住空格在点击GJQ（高级群的首拼）会出现TrayTip/ListView提示一个列表，<br>![](https://github.com/liumenggit/pic/raw/master/HotWindowsgjq.gif)<br>现在松开空格键即可激活高级群窗口，如果没有列表说明没有相似名字的窗口，如果列表中有多条则依照数字按下数字激活响应的窗口，如果所需激活的窗口为头条则松开空格后即可激活。
+开启脚本后等待托盘区提示准备完成，<br>![](https://github.com/liumenggit/pic/raw/master/HotWindowszbwc.gif)<br>功能为利用窗口标题字母索引窗口/程序，--例如--激活AutoHotkey高级群窗口，则按住空格在点击GJQ（高级群的首拼）会出现TrayTip/ListView提示一个列表，<br>![](https://github.com/liumenggit/pic/raw/master/HotWindowsgjq.gif)<br>现在松开空格键即可激活高级群窗口，如果没有列表说明没有相似名字的窗口，如果列表中有多条则依照数字按下数字激活响应的窗口，如果所需激活的窗口为头条则松开空格后即可激活。
 
 ## GIF演示
 ![](https://github.com/liumenggit/pic/raw/master/HotWindows.gif)
