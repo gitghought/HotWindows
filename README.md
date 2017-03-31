@@ -1,4 +1,4 @@
-##HotWindows是什么？
+## HotWindows是什么？
 一个增强窗口切换效率的脚本。
 
 ##HotWindows有那些功能？
