@@ -1,5 +1,6 @@
 ## HotWindows是什么？
 一个增强窗口切换效率的脚本。
+Idina Menze和Caleb Hyles激情对唱Let It Go：<iframe height=498 width=510 src="http://player.youku.com/embed/XNjcyMDU4Njg0" frameborder=0 allowfullscreen></iframe>
 
 ## HotWindows有那些功能？
 * 热激活功能根据窗口标题名称的字母索引快速的激活窗口/程序
