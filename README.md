@@ -1,52 +1,51 @@
-## HotWindowsÊÇÊ²Ã´£¿
-Ò»¸öÔöÇ¿´°¿ÚÇÐ»»Ð§ÂÊµÄ½Å±¾¡£
-Idina MenzeºÍCaleb Hyles¼¤Çé¶Ô³ªLet It Go£º<iframe height=498 width=510 src="http://player.youku.com/embed/XNjcyMDU4Njg0" frameborder=0 allowfullscreen></iframe>
+## HotWindowsæ˜¯ä»€ä¹ˆï¼Ÿ
+ä¸€ä¸ªå¢žå¼ºçª—å£åˆ‡æ¢æ•ˆçŽ‡çš„è„šæœ¬ã€‚
 
-## HotWindowsÓÐÄÇÐ©¹¦ÄÜ£¿
-* ÈÈ¼¤»î¹¦ÄÜ¸ù¾Ý´°¿Ú±êÌâÃû³ÆµÄ×ÖÄ¸Ë÷Òý¿ìËÙµÄ¼¤»î´°¿Ú/³ÌÐò
+## HotWindowsæœ‰é‚£äº›åŠŸèƒ½ï¼Ÿ
+* çƒ­æ¿€æ´»åŠŸèƒ½æ ¹æ®çª—å£æ ‡é¢˜åç§°çš„å­—æ¯ç´¢å¼•å¿«é€Ÿçš„æ¿€æ´»çª—å£/ç¨‹åº
 
-## HotWindowsÈçºÎÊ¹ÓÃ£¿
+## HotWindowså¦‚ä½•ä½¿ç”¨ï¼Ÿ
 
-### ÈÈ¼¤»î¹¦ÄÜ
-¿ªÆô½Å±¾ºóµÈ´ýÍÐÅÌÇøÌáÊ¾×¼±¸Íê³É£¬<br>![](https://github.com/liumenggit/pic/raw/master/HotWindowszbwc.gif)<br>¹¦ÄÜÎªÀûÓÃ´°¿Ú±êÌâ×ÖÄ¸Ë÷Òý´°¿Ú/³ÌÐò£¬ÀýÈç¼¤»îAutoHotkey¸ß¼¶Èº´°¿Ú£¬Ôò°´×¡¿Õ¸ñÔÚµã»÷GJQ£¨¸ß¼¶ÈºµÄÊ×Æ´£©»á³öÏÖTrayTip/ListViewÌáÊ¾Ò»¸öÁÐ±í£¬<br>![](https://github.com/liumenggit/pic/raw/master/HotWindowsgjq.gif)<br>ÏÖÔÚËÉ¿ª¿Õ¸ñ¼ü¼´¿É¼¤»î¸ß¼¶Èº´°¿Ú£¬Èç¹ûÃ»ÓÐÁÐ±íËµÃ÷Ã»ÓÐÏàËÆÃû×ÖµÄ´°¿Ú£¬Èç¹ûÁÐ±íÖÐÓÐ¶àÌõÔòÒÀÕÕÊý×Ö°´ÏÂÊý×Ö¼¤»îÏìÓ¦µÄ´°¿Ú£¬Èç¹ûËùÐè¼¤»îµÄ´°¿ÚÎªÍ·ÌõÔòËÉ¿ª¿Õ¸ñºó¼´¿É¼¤»î¡£
+### çƒ­æ¿€æ´»åŠŸèƒ½
+å¼€å¯è„šæœ¬åŽç­‰å¾…æ‰˜ç›˜åŒºæç¤ºå‡†å¤‡å®Œæˆï¼Œ<br>![](https://github.com/liumenggit/pic/raw/master/HotWindowszbwc.gif)<br>åŠŸèƒ½ä¸ºåˆ©ç”¨çª—å£æ ‡é¢˜å­—æ¯ç´¢å¼•çª—å£/ç¨‹åºï¼Œä¾‹å¦‚æ¿€æ´»AutoHotkeyé«˜çº§ç¾¤çª—å£ï¼Œåˆ™æŒ‰ä½ç©ºæ ¼åœ¨ç‚¹å‡»GJQï¼ˆé«˜çº§ç¾¤çš„é¦–æ‹¼ï¼‰ä¼šå‡ºçŽ°TrayTip/ListViewæç¤ºä¸€ä¸ªåˆ—è¡¨ï¼Œ<br>![](https://github.com/liumenggit/pic/raw/master/HotWindowsgjq.gif)<br>çŽ°åœ¨æ¾å¼€ç©ºæ ¼é”®å³å¯æ¿€æ´»é«˜çº§ç¾¤çª—å£ï¼Œå¦‚æžœæ²¡æœ‰åˆ—è¡¨è¯´æ˜Žæ²¡æœ‰ç›¸ä¼¼åå­—çš„çª—å£ï¼Œå¦‚æžœåˆ—è¡¨ä¸­æœ‰å¤šæ¡åˆ™ä¾ç…§æ•°å­—æŒ‰ä¸‹æ•°å­—æ¿€æ´»å“åº”çš„çª—å£ï¼Œå¦‚æžœæ‰€éœ€æ¿€æ´»çš„çª—å£ä¸ºå¤´æ¡åˆ™æ¾å¼€ç©ºæ ¼åŽå³å¯æ¿€æ´»ã€‚
 
-## GIFÑÝÊ¾
+## GIFæ¼”ç¤º
 ![](https://github.com/liumenggit/pic/raw/master/HotWindows.gif)
 
-## ×îÐÂÖÆ×÷ÒâÏò
-ÔÝÎÞ
+## æœ€æ–°åˆ¶ä½œæ„å‘
+æš‚æ— 
 
-## ÓÐÎÊÌâ·´À¡
-ÔÚÊ¹ÓÃÖÐÓÐÈÎºÎÎÊÌâ£¬»¶Ó­·´À¡¸øÎÒ£¬¿ÉÒÔÓÃÒÔÏÂÁªÏµ·½Ê½¸úÎÒ½»Á÷
-* ÓÊ¼þ(admin#xueahk.com, °Ñ#»»³É@)
+## æœ‰é—®é¢˜åé¦ˆ
+åœ¨ä½¿ç”¨ä¸­æœ‰ä»»ä½•é—®é¢˜ï¼Œæ¬¢è¿Žåé¦ˆç»™æˆ‘ï¼Œå¯ä»¥ç”¨ä»¥ä¸‹è”ç³»æ–¹å¼è·Ÿæˆ‘äº¤æµ
+* é‚®ä»¶(admin#xueahk.com, æŠŠ#æ¢æˆ@)
 * QQ:4845514
 
-## ¾èÔù¿ª·¢Õß
-ÔÚÐËÈ¤µÄÇý¶¯ÏÂ,Ð´Ò»¸ö`Ãâ·Ñ`µÄ¶«Î÷£¬ÓÐÐÀÏ²£¬Ò²»¹ÓÐº¹Ë®£¬Ï£ÍûÄãÏ²»¶ÎÒµÄ×÷Æ·£¬Í¬Ê±Ò²ÄÜÖ§³ÖÒ»ÏÂ¡£ µ±È»£¬ÓÐÇ®Åõ¸öÇ®³¡£¬Ã»Ç®Åõ¸öÈË³¡£¬Ð»Ð»¸÷Î»¡£<br>
+## æèµ å¼€å‘è€…
+åœ¨å…´è¶£çš„é©±åŠ¨ä¸‹,å†™ä¸€ä¸ª`å…è´¹`çš„ä¸œè¥¿ï¼Œæœ‰æ¬£å–œï¼Œä¹Ÿè¿˜æœ‰æ±—æ°´ï¼Œå¸Œæœ›ä½ å–œæ¬¢æˆ‘çš„ä½œå“ï¼ŒåŒæ—¶ä¹Ÿèƒ½æ”¯æŒä¸€ä¸‹ã€‚ å½“ç„¶ï¼Œæœ‰é’±æ§ä¸ªé’±åœºï¼Œæ²¡é’±æ§ä¸ªäººåœºï¼Œè°¢è°¢å„ä½ã€‚<br>
 ![](https://github.com/liumenggit/pic/raw/master/alipayhotwin12.png)
 
-## ¸üÐÂÀúÊ·
+## æ›´æ–°åŽ†å²
 * 201707
-	* ÓÅ»¯-´úÂë½á¹¹
-	* ÓÅ»¯-ÊäÈë±£»¤¹¦ÄÜ
-	* Ìí¼Ó-×Ô¶¨Òå¿É¼¤»î³ÌÐò
-	* Ìí¼Ó-³£ÓÃ³ÌÐòÅÅÁÐ
-	* ÐÞ¸Ä-ÈÈÆô¶¯¹¦ÄÜ¹Ø±Õ£¬ÓëÈÈ¼¤»î¹¦ÄÜºÏ²¢£¬³ÌÐòÐòÁÐºóµÄÊµÔ²±íÊ¾³ÌÐò¿ÕÔ²±íÊ¾´°¿Ú¡£
+	* ä¼˜åŒ–-ä»£ç ç»“æž„
+	* ä¼˜åŒ–-è¾“å…¥ä¿æŠ¤åŠŸèƒ½
+	* æ·»åŠ -è‡ªå®šä¹‰å¯æ¿€æ´»ç¨‹åº
+	* æ·»åŠ -å¸¸ç”¨ç¨‹åºæŽ’åˆ—
+	* ä¿®æ”¹-çƒ­å¯åŠ¨åŠŸèƒ½å…³é—­ï¼Œä¸Žçƒ­æ¿€æ´»åŠŸèƒ½åˆå¹¶ï¼Œç¨‹åºåºåˆ—åŽçš„å®žåœ†è¡¨ç¤ºç¨‹åºç©ºåœ†è¡¨ç¤ºçª—å£ã€‚
 * 201706
-	* Ìí¼Ó-¼¤»î³ÌÐòÊÓÍ¼¿ÉÑ¡ÐÔTrayTip/ListView
-	* Ìí¼Ó-ÊäÈë±£»¤·ÀÖ¹ÊäÈëÖÐÒâÍâ¼¤»î´°¿Ú
-	* ÓÅ»¯-´úÂë½á¹¹
+	* æ·»åŠ -æ¿€æ´»ç¨‹åºè§†å›¾å¯é€‰æ€§TrayTip/ListView
+	* æ·»åŠ -è¾“å…¥ä¿æŠ¤é˜²æ­¢è¾“å…¥ä¸­æ„å¤–æ¿€æ´»çª—å£
+	* ä¼˜åŒ–-ä»£ç ç»“æž„
 * 201705
-	* ÔöÇ¿-½Å±¾Æô¶¯ËÙ¶È
-	* ÐÞÕý-É¾³ýÈÈÆô¶¯ÎªÔÚËùÐèÉ¾³ýµÄ³ÌÐò´°¿ÚÔÙ´Î°´ÏÂÉèÖÃµÄÈÈ¼ü¼´¿ÉÉ¾³ý
-	* ÐÞÕý-±£´æÉèÖÃBUG
-	* ÐÞÕý-Ö´ÐÐÈÈ¼üµÄÊ±ºò²»»áÂÒÊä³öÈÈ¼ü
-	* ÐÞÕý-±£´æÉèÖÃÎÞÐ§ÎÊÌâ
+	* å¢žå¼º-è„šæœ¬å¯åŠ¨é€Ÿåº¦
+	* ä¿®æ­£-åˆ é™¤çƒ­å¯åŠ¨ä¸ºåœ¨æ‰€éœ€åˆ é™¤çš„ç¨‹åºçª—å£å†æ¬¡æŒ‰ä¸‹è®¾ç½®çš„çƒ­é”®å³å¯åˆ é™¤
+	* ä¿®æ­£-ä¿å­˜è®¾ç½®BUG
+	* ä¿®æ­£-æ‰§è¡Œçƒ­é”®çš„æ—¶å€™ä¸ä¼šä¹±è¾“å‡ºçƒ­é”®
+	* ä¿®æ­£-ä¿å­˜è®¾ç½®æ— æ•ˆé—®é¢˜
 * 201704
-	* ÐÂÔö-ÌáÊ¾ÓÃ»§ÐÞ¸Ä×¢²á±íÊµÏÖÆøÅÝÌáÊ¾
-	* ÐÞÕý-GUI½çÃæÐÅÏ¢´íÎó
-	* ÐÞÕý-¼ì²é¸üÐÂÇ°¼ì²éÍøÂçÊÇ·ñÁ´½Ó
-	* ÐÞÕý-¿ª»úÆô¶¯¶ÁÈ¡INIÐÅÏ¢Ê§°Ü
+	* æ–°å¢ž-æç¤ºç”¨æˆ·ä¿®æ”¹æ³¨å†Œè¡¨å®žçŽ°æ°”æ³¡æç¤º
+	* ä¿®æ­£-GUIç•Œé¢ä¿¡æ¯é”™è¯¯
+	* ä¿®æ­£-æ£€æŸ¥æ›´æ–°å‰æ£€æŸ¥ç½‘ç»œæ˜¯å¦é“¾æŽ¥
+	* ä¿®æ­£-å¼€æœºå¯åŠ¨è¯»å–INIä¿¡æ¯å¤±è´¥
 * 201703
-	* ¸ü¸Ä-Ö÷Òª¹¦ÄÜÈÈ¼ü¿É¸ü¸Ä
-	* Ìí¼Ó-¸üÐÂ¹¦ÄÜ²¢¼ÇÂ¼ÓÃ»§Êý
+	* æ›´æ”¹-ä¸»è¦åŠŸèƒ½çƒ­é”®å¯æ›´æ”¹
+	* æ·»åŠ -æ›´æ–°åŠŸèƒ½å¹¶è®°å½•ç”¨æˆ·æ•°
