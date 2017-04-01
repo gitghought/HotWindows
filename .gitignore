@@ -1,1 +1,7 @@
-*.ahk
+*.*
+!*.exe
+!*.dll
+!*.tbl
+!*.md
+!*.ini
+!.gitignore
