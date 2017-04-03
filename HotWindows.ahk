@@ -41,7 +41,7 @@ Menu,Dele_mdb,Add,清除窗口记录,Dele_mdb_Gui
 Menu,Dele_mdb,Add,清除程序记录,Dele_mdb_Exe
 Menu,Dele_mdb,Add,清除样式记录,Dele_mdb_Style
 Menu,Dele_mdb,Add,清除所有记录,Dele_mdb
-Menu,Tray,Add,清除样式,:Dele_mdb
+Menu,Tray,Add,清除纪录,:Dele_mdb
 Menu,Tray,Add,添加程序,Add_exe
 Menu,Tray,Add
 Menu,Tray,Add,重启脚本,Reload
@@ -71,13 +71,14 @@ if not Styles{
 }
 if not Hot_Set_key{
 	Hot_Set_key=Space
-	RegWrite,REG_SZ,HKEY_CURRENT_USER,HotWindows,HotHot_key,Space
+	RegWrite,REG_SZ,HKEY_CURRENT_USER,HotWindows,HotHot_key,% Hot_Set_key
 	Menu,Hot_key,ToggleCheck,Space
 }else{
 	Menu,Hot_key,ToggleCheck,%Hot_Set_key%
 }
 if not Show_mode{
-	RegWrite,REG_SZ,HKEY_CURRENT_USER,HotWindows,HotShow_mode,ListView
+	Show_mode=ListView
+	RegWrite,REG_SZ,HKEY_CURRENT_USER,HotWindows,HotShow_mode,% Show_mode
 	Menu,Show_mode,ToggleCheck,ListView
 }else{
 	Menu,Show_mode,ToggleCheck,%Show_mode%
@@ -91,7 +92,7 @@ if Bubble
 	Menu,Tray,ToggleCheck,气泡提示
 if not Boot{
 	Boot:=1
-	RegWrite,REG_SZ,HKEY_CURRENT_USER,HotWindows,Hotboot,1
+	RegWrite,REG_SZ,HKEY_CURRENT_USER,HotWindows,Hotboot,% Boot
 	Menu,Tray,ToggleCheck,输入保护
 }else if (Boot="1"){
 	Menu,Tray,ToggleCheck,输入保护
@@ -102,16 +103,36 @@ if LastTime and (LastTime<Edition)
 		RunWait https://github.com/liumenggit/HotWindows#更新历史
 RegWrite,REG_SZ,HKEY_CURRENT_USER,HotWindows,HotEdit,%Edition%
 
+;<<<<<<<<<<<<热键创建>>>>>>>>>>>>
+Layout=qwertyuiopasdfghjklzxcvbnm
+Loop,Parse,Layout
+{
+	Layouts:=A_LoopField
+	Loop,parse,Hot_keys,`,
+	{
+		Hotkey,~%A_LoopField% & %Layouts%,Layout
+		if (Hot_Set_key!=A_LoopField)
+			Hotkey,~%A_LoopField% & %Layouts%,off
+	}
+}
+SysGet,Width,16
+SysGet,Height,17
+ListWidth:=Width/4
+
 ;<<<<<<<<<<<<声明全局变量>>>>>>>>>>>>
-global Styles,Path_data,Show_mode,Key_History,WHERE_list,Path_list,Ger,Gers,Starts,NewEdition
+global Styles,Path_data,Show_mode,K_ThisHotkey,WHERE_list,Path_list,Ger,Gers,Starts,NewEdition
 
 ;<<<<<<<<<<<<检查更新>>>>>>>>>>>>
 if W_InternetCheckConnection("https://github.com"){
 	Progress,,确保网络联通,检查更新请稍等...,HotWindows
 	whr := ComObjCreate("WinHttp.WinHttpRequest.5.1")
 	whr.Open("GET","https://raw.githubusercontent.com/liumenggit/HotWindows/master/README.md",false)
-	whr.Send()
-	whr.WaitForResponse()
+	Try{
+		whr.Send()
+		whr.WaitForResponse()
+	}catch e {
+		MsgBox,出错
+	}
 	RegExMatch(whr.ResponseText,"\b\d{6}\b",NewEdition)
 	;Edition=201701
 	if (NewEdition>Edition){
@@ -123,14 +144,6 @@ if W_InternetCheckConnection("https://github.com"){
 ;<<<<<<<<<<<<DLL载入>>>>>>>>>>>>
 tcmatch := "Tcmatch.dll"
 hModule := DllCall("LoadLibrary", "Str", tcmatch, "Ptr")
-
-;<<<<<<<<<<<<热键创建>>>>>>>>>>>>
-Layout=qwertyuiopasdfghjklzxcvbnm
-Loop,Parse,Layout
-	Hotkey,%A_LoopField%,Layout
-SysGet,Width,16
-SysGet,Height,17
-ListWidth:=Width/4
 
 ;<<<<<<<<<<<<GUI>>>>>>>>>>>>
 Gui,+AlwaysOnTop +Border -SysMenu +ToolWindow +LastFound +HwndMyGuiHwnd
@@ -147,7 +160,6 @@ IfNotExist,%Path_data%
 	SQL_Run("CREATE TABLE Now_list(Title varchar(255),Pid varchar(255),Path varchar(255),GetStyle varchar(255))")	;添加程序数据库表
 	SQL_Run("CREATE TABLE Activate(Title varchar(255),Times varchar(255))")	;添加程序数据库表
 	SQL_Run("CREATE TABLE Quick(Title varchar(255),Pid varchar(255),Path varchar(255),GetStyle varchar(255))")	;添加程序数据库表
-	;SQL_Run("CREATE TABLE Quick(Title varchar(255),Path varchar(255))")
 }else{
 	SQL_Run("DELETE FROM Now_list")
 }
@@ -163,7 +175,7 @@ loop{
 	if Get_Style not in %Styles%
 	{
 		Styles=%Styles%`,%Get_Style%
-		RegWrite,REG_SZ,HKEY_CURRENT_USER,HotWindows,HotStyles,%Styles%
+		RegWrite,REG_SZ,HKEY_CURRENT_USER,HotWindows,HotStyles,% Styles
 	}
 	Load_exe(Exe_Name)
 	WinWaitNotActive,ahk_id %Wina_id%
@@ -173,43 +185,27 @@ Return
 
 ;<<<<<<<<<<<<主要功能的标签>>>>>>>>>>>>
 Layout:
-if GetKeyState(HotWindows,"P"){
-	Key_History = %Key_History%%A_ThisHotkey%
-	StrLens := StrLen(Key_History)
+	StringRight,H_ThisHotkey,A_ThisHotkey,1
+	K_ThisHotkey:=K_ThisHotkey H_ThisHotkey
+	StrLens := StrLen(K_ThisHotkey)
+	ToolTip,,%K_ThisHotkey%
 	if StrLens=1
 		loop,9{
 			Hotkey,%A_Index%,Table
 			Hotkey,%A_Index%,On
 		}
-	SQL_List("SELECT Activate.title,Activate.times,t1.pid,t1.path,t1.getstyle FROM Activate LEFT JOIN (SELECT * FROM Now_list UNION SELECT * FROM Quick) AS t1 ON Activate.title = t1.title WHERE t1.pid IS NOT NULL OR t1.path IS NOT NULL ORDER BY Activate.Times +- 1 DESC,t1.GetStyle DESC",Key_History)
-	if WHERE_list.Length() and Key_History{
+	SQL_List("SELECT Activate.title,Activate.times,t1.pid,t1.path,t1.getstyle FROM Activate LEFT JOIN (SELECT * FROM Now_list UNION SELECT * FROM Quick) AS t1 ON Activate.title = t1.title WHERE t1.pid IS NOT NULL OR t1.path IS NOT NULL ORDER BY Activate.Times +- 1 DESC,t1.GetStyle DESC",K_ThisHotkey)
+	if WHERE_list.Length() and K_ThisHotkey{
 		Show_list(WHERE_list)
 		if (WHERE_list.Length()="1"){
 			Activate("1")
-			Send {Space Up}
+			Send {%Hot_Set_key% Up}
 		}
 	}else{
 		Cancel()
 	}
-	if (Boot="1") and (StrLens="1")
-		if GetKeyState("CapsLock","T")
-			StringUpper,PriorHotke,A_ThisHotkey
-		else
-			PriorHotke:=A_ThisHotkey
 	if StrLens=1
 		SetTimer,Key_wait,200
-}else{
-	Cancel()
-	if (Boot="1") and (StrLens="1"){
-		Send %PriorHotke%
-		StrLens:=
-	}
-	if GetKeyState("CapsLock","T")
-		StringUpper,ThisHotkey,A_ThisHotkey
-	else
-		ThisHotkey:=A_ThisHotkey
-	Send %ThisHotkey%
-}
 Return
 
 
@@ -220,19 +216,23 @@ Return
 Key_wait:
 	SetTimer,Key_wait,off
 	KeyWait,%Hot_Set_key%,L
+	if not K_ThisHotkey
+		Return
 	if (EventInfo<>"0") and (Show_mode="ListView"){
-		if Key_History
+		if (Boot="1") and (StrLens="1")
+			Cancel()
+		if (Boot="2")
+			Activate(EventInfo)
+		if (Boot="1") and (StrLens>"1")
 			Activate(EventInfo)
 		Return
 	}
 	if (Boot="1") and (StrLens="1")	;开启了输入保护什么也没有发生
 		Cancel()
 	if (Boot="2")	;没有开启输入保护激活第一个
-		if Key_History
-			Activate("1")
+		Activate("1")
 	if (Boot="1") and (StrLens>"1")	;开启了输入保护发生了事情
-		if Key_History
-			Activate("1")
+		Activate("1")
 Return
 
 Add_exe:
@@ -308,15 +308,9 @@ Activate(WHERE_time){
 	if Activate{
 		WinActivate,ahk_id %Activate%
 	}else{
-		IfNotExist,%Path%
-		{
-			TrayTip,%Title%,文件路径失效
-			SQL_Run("DELETE FROM Quick WHERE Path='" Path "'")
-		}else{
-			Try Run %Path%
-			catch e
-				Return
-		}
+		Try RunWait %Path%
+		catch e
+			Return
 	}
 	if not Sql_Get("SELECT Times FROM Activate WHERE Title='" Title "'")
 		SQL_Run("Insert INTO Activate (Title,Times) VALUES ('" Title "','1')")
@@ -325,17 +319,15 @@ Activate(WHERE_time){
 }
 
 Cancel(){
-	if Key_History
+	if K_ThisHotkey
 		loop,9
 			Hotkey,%A_Index%,off
-	loop,9
 	if Show_mode=ListView
 		Gui,Cancel
 	else
 		TrayTip
-	WinClose,ahk_class Windows.UI.Core.CoreWindow
-	Key_History:=
-	Send {Space Up}
+	K_ThisHotkey:=
+	Send {%Hot_Set_key% Up}
 }
 
 Show_list(WHERE_list){
@@ -354,12 +346,13 @@ Show_list(WHERE_list){
 			LV_Add("Icon" . IL_Add(ImageListID,v.Path,1),k Level,v.Title)
 		}
 		LV_ModifyCol()
-		SB_SetText("按键历史：" . Key_History . "")
+		SB_SetText("按键历史：" . K_ThisHotkey . "")
 		LV_Modify(1,"Select")
+		LV_Modify(1,"Focus")
 		GuiControl,+Redraw,MyListView
 		Gui,Show,AutoSize Center,HotWindows
 	}else{
-		Tip_list:=Key_History
+		Tip_list:=K_ThisHotkey
 		For k,v in WHERE_list
 		{
 			if v.Pid
@@ -370,6 +363,8 @@ Show_list(WHERE_list){
 		}
 		TrayTip,,%Tip_list%
 	}
+	if not K_ThisHotkey
+		Cancel()
 }
 
 ;<<<<<<<<<<<<生成数据>>>>>>>>>>>>
@@ -396,7 +391,7 @@ Load_list(){
 	while !Recordset.EOF
 	{
 		Quick_Path:=Recordset.Fields["Path"].Value
-		;if not GetIconCount(Quick_Path)		
+		;if not GetIconCount(Quick_Path)
 		IfNotExist,%Quick_Path%
 			SQL_Run("DELETE FROM Quick WHERE Path='" Quick_Path "'")
 		Recordset.MoveNext()
@@ -441,14 +436,12 @@ Add_quick(Path){
 	IfNotInString,Path,%A_WinDir%
 	{
 		SplitPath,Path,OutFileName,OutDir,OutExtension,OutNameNoExt,OutDrive
-		if GetIconCount(Path) or OutExtension="lnk" {
 			if not Sql_Get("SELECT COUNT(*) FROM Quick WHERE Path='" Path "'"){
 				SQL_Run("DELETE FROM Quick WHERE Title='" OutNameNoExt "'")
 				SQL_Run("Insert INTO Quick (Title,Path) VALUES ('" OutNameNoExt "','" Path "')")
 				if not Sql_Get("SELECT Times FROM Activate WHERE Title='" OutNameNoExt "'")
 					SQL_Run("Insert INTO Activate (Title,Times) VALUES ('" OutNameNoExt "','1')")
 			}
-		}
 	}
 }
 
@@ -494,10 +487,15 @@ Show_mode:
 	RegWrite,REG_SZ,HKEY_CURRENT_USER,HotWindows,HotShow_mode,%A_ThisMenuItem%
 Return
 Hot_key:
-		Hot_Set_key:=A_ThisMenuItem
+	Loop,Parse,Layout
+	{
+		Hotkey,~%Hot_Set_key% & %A_LoopField%,off
+		Hotkey,~%A_ThisMenuItem% & %A_LoopField%,On
+	}
+	Hot_Set_key:=A_ThisMenuItem
 	Loop,parse,Hot_keys,`,
 		Menu,Hot_key,Uncheck,%A_LoopField%
-	Menu,Hot_key,ToggleCheck,%A_ThisMenuItem%
+	Menu,Hot_key,ToggleCheck,%Hot_Set_key%
 	RegWrite,REG_SZ,HKEY_CURRENT_USER,HotWindows,HotHot_key,%A_ThisMenuItem%
 Return
 
@@ -550,14 +548,34 @@ ExitApp:
 	ExitApp
 
 ;<<<<<<<<<<<<SQL函数>>>>>>>>>>>>
-SQL_List(SQL,Key_History){
+SQL_List(SQL,K_ThisHotkey){
 	Recordset := ComObjCreate("ADODB.Recordset")
 	Recordset.Open(SQL,"Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" . Path_data . "")
 	WHERE_list := Object()
 	WHERE_time :=
 	while !Recordset.EOF
 	{
-		if (matched := DllCall("Tcmatch\MatchFileW","WStr",Key_History,"WStr",Recordset.Fields["Title"].Value)){
+		wPID:=Recordset.Fields["PID"].Value
+		wPath:=Recordset.Fields["Path"].Value
+		if wPID
+		{
+			IfWinNotExist,ahk_id %wPID%
+			{
+				SQL_Run("DELETE FROM Now_list WHERE PID='" Recordset.Fields["PID"].Value "'")
+				Recordset.MoveNext()
+				Continue
+			}
+		}
+		else if wPath
+		{
+			IfNotExist,%wPath%
+			{
+				SQL_Run("DELETE FROM Now_list WHERE Path='" Recordset.Fields["Path"].Value "'")
+				Recordset.MoveNext()
+				Continue
+			}
+		}
+		if (matched := DllCall("Tcmatch\MatchFileW","WStr",K_ThisHotkey,"WStr",Recordset.Fields["Title"].Value)){
 				WHERE_time++
 				WHERE_list[WHERE_time]:={Title:Recordset.Fields["Title"].Value,PID:Recordset.Fields["PID"].Value,Path:Recordset.Fields["Path"].Value,GetStyle:Recordset.Fields["GetStyle"].Value,Times:Recordset.Fields["Times"].Value}
 		}
@@ -724,13 +742,4 @@ Update(URL){
 	catch e
 		return
 	return req.responseText
-}
-
-RegExMatchAll(ByRef Haystack, NeedleRegEx, SubPat="") {		;正则表达式
-	arr := [], startPos := 1
-	while ( pos := RegExMatch(Haystack, NeedleRegEx, match, startPos) ) {
-	arr.push(match%SubPat%)
-	startPos := pos + StrLen(match)
-}
-return arr.MaxIndex() ? arr : ""
 }
