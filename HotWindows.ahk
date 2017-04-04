@@ -20,7 +20,7 @@ if not Bubble
 		IfMsgBox Yes
 		{
 			RegWrite,REG_DWORD,HKEY_CURRENT_USER,SOFTWARE\Policies\Microsoft\Windows\Explorer,EnableLegacyBalloonNotifications,1
-			RunWait %comspec% /c "taskkill /f /t /im explorer.exe",,Hide
+			RunWait %comspec% /c "taskkill /f /im explorer.exe",,Hide
 			Run %comspec% /c "start c:\Windows\explorer.exe",,Hide
 		}
 
@@ -483,7 +483,7 @@ if Bubble
 else
 	RegWrite,REG_DWORD,HKEY_CURRENT_USER,SOFTWARE\Policies\Microsoft\Windows\Explorer,EnableLegacyBalloonNotifications,1
 	Menu,Tray,ToggleCheck,∆¯≈›Ã· æ
-	RunWait %comspec% /c "taskkill /f /t /im explorer.exe",,Hide
+	RunWait %comspec% /c "taskkill /f /im explorer.exe",,Hide
 	Run %comspec% /c "start c:\Windows\explorer.exe",,Hide
 Return
 
