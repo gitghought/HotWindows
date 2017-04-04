@@ -23,6 +23,9 @@
 ![](https://github.com/liumenggit/pic/raw/master/alipayhotwin12.png)
 
 ## 更新历史
+* 201714
+	* 优化-热键设置
+	* 添加-用户统计功能
 * 201713
 	* 修正-ListView显示错误
 	* 优化-常用窗口/程序排序
