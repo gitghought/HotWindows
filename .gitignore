@@ -1,8 +1,9 @@
 *.*
+!*.md
 !*.exe
-!HotWindows.ahk
+!*.icl
 !*.dll
 !*.tbl
-!*.md
 !*.ini
 !.gitignore
+!HotWindows.ahk

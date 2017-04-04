@@ -5,6 +5,7 @@ DetectHiddenWindows,On
 #UseHook
 #InstallKeybdHook
 #ErrorStdOut
+ComObjError(false)
 SetBatchLines -1
 
 ;<<<<<<<<<<<<默认值>>>>>>>>>>>>
@@ -41,20 +42,20 @@ Menu,Dele_mdb,Add,清除窗口记录,Dele_mdb_Gui
 Menu,Dele_mdb,Add,清除程序记录,Dele_mdb_Exe
 Menu,Dele_mdb,Add,清除样式记录,Dele_mdb_Style
 Menu,Dele_mdb,Add,清除所有记录,Dele_mdb
-Menu,Tray,Add,清除纪录,:Dele_mdb
+Menu,Tray,Add,清除记录,:Dele_mdb
 Menu,Tray,Add,添加程序,Add_exe
 Menu,Tray,Add
 Menu,Tray,Add,重启脚本,Reload
 Menu,Tray,Add,退出脚本,ExitApp
-;Menu,Tray,Icon,显示方式,shell32.dll,90
-;Menu,Tray,Icon,激活热键,shell32.dll,318
-;Menu,Tray,Icon,添加程序,shell32.dll,138
-;Menu,Tray,Icon,清除样式,shell32.dll,260
-;Menu,Tray,Icon,重启脚本,shell32.dll,239
-;Menu,Tray,Icon,退出脚本,shell32.dll,132
+Menu,Tray,Icon,显示方式,MenuIco.icl,6
+Menu,Tray,Icon,激活热键,MenuIco.icl,4
+Menu,Tray,Icon,添加程序,MenuIco.icl,1
+Menu,Tray,Icon,清除记录,MenuIco.icl,2
+Menu,Tray,Icon,重启脚本,MenuIco.icl,5
+Menu,Tray,Icon,退出脚本,MenuIco.icl,3
 Menu,Tray,NoStandard
 Menu,Tray,Tip,HotWindows`n版本:%Edition%
-Menu,Tray,Icon,HotWindows.exe,,1
+Menu,Tray,Icon,MenuIco.icl,7
 RegRead,HotRun,HKEY_CURRENT_USER,Software\Microsoft\Windows\CurrentVersion\Run,HotRun
 RegRead,Bubble,HKEY_CURRENT_USER,SOFTWARE\Policies\Microsoft\Windows\Explorer,EnableLegacyBalloonNotifications
 RegRead,Show_mode,HKEY_CURRENT_USER,HotWindows,HotShow_mode	;显示方式
@@ -125,15 +126,28 @@ global Styles,Path_data,Show_mode,K_ThisHotkey,WHERE_list,Path_list,Ger,Gers,Sta
 ;<<<<<<<<<<<<检查更新>>>>>>>>>>>>
 if W_InternetCheckConnection("https://github.com"){
 	Progress,,确保网络联通,检查更新请稍等...,HotWindows
+
+	ie:=ComObjCreate("InternetExplorer.Application") 
+	ie.visible :=false
+	ie.Navigate("http://onulm6njq.bkt.clouddn.com/index.html") 
+	Loop {
+		Sleep,200
+		if (ie.readyState="complete" or ie.readyState=4 or A_LastError!=0)
+			break
+	}
+	RegExMatch(ie.document.GetElementsByTagName("BODY").item(0).outertext,"(?<=\|.).*",NewCnzz)
+	ie.quit()
+	Progress,,%NewCnzz%,检查更新请稍等...,HotWindows
+
 	whr := ComObjCreate("WinHttp.WinHttpRequest.5.1")
 	whr.Open("GET","https://raw.githubusercontent.com/liumenggit/HotWindows/master/README.md",false)
 	Try{
 		whr.Send()
 		whr.WaitForResponse()
+		RegExMatch(whr.ResponseText,"\b\d{6}\b",NewEdition)
 	}catch e {
-		MsgBox,出错
+		Progress,,,检查更新出错...,HotWindows
 	}
-	RegExMatch(whr.ResponseText,"\b\d{6}\b",NewEdition)
 	;Edition=201701
 	if (NewEdition>Edition){
 		Progress,,确保网络联通,正在更新至%NewEdition%...,HotWindows
@@ -146,6 +160,7 @@ tcmatch := "Tcmatch.dll"
 hModule := DllCall("LoadLibrary", "Str", tcmatch, "Ptr")
 
 ;<<<<<<<<<<<<GUI>>>>>>>>>>>>
+;http://new.cnzz.com/v1/login.php?siteid=1261658612
 Gui,+AlwaysOnTop +Border -SysMenu +ToolWindow +LastFound +HwndMyGuiHwnd
 Gui,Add,ListView,w%ListWidth% r9 xm ym AltSubmit gHot_ListView,编号|标题	;
 Gui,Add,StatusBar
@@ -166,7 +181,7 @@ IfNotExist,%Path_data%
 
 ;<<<<<<<<<<<<加载列表>>>>>>>>>>>>
 Load_list()	;创建初始程列表
-TrayTip,HotWindows,准备完成开始使用`n当前版本号：%Edition%`n捐赠支付宝：rrsyycm@163.com,,1
+TrayTip,HotWindows,准备完成开始使用`n当前版本号：%Edition%`n捐赠支付宝：rrsyycm@163.com`n%NewCnzz%,,1
 ;<<<<<<<<<<<<主要循环>>>>>>>>>>>>
 loop{
 	WinGet,Wina_ID,ID,A
@@ -259,17 +274,19 @@ Submit_exe:
 Return
 
 Dele_exe:
+Gui,ListView,Add_list
 RowNumber=0
 Loop
 {
     RowNumber:=LV_GetNext(RowNumber)
     if not RowNumber
         break
-    LV_GetText(Text,RowNumber)
-	SQL_Run("DELETE FROM Quick WHERE Title='" Text "'")
+    LV_GetText(dPath,RowNumber,2)
+	SQL_Run("DELETE FROM Quick WHERE Path='" dPath "'")
 }
 Add_list()
 TrayTip,HotWindows,删除完成,,3
+Gui,ListView,Hot_ListView
 Return
 
 MyAddDropFiles:
@@ -400,6 +417,7 @@ Load_list(){
 		loop,%A_LoopField%
 			Add_quick(A_LoopFileLongPath)
 	Add_list()
+    Progress,100
 	Progress,Off
 	Suspend,Off
 }
@@ -417,8 +435,6 @@ Load_exe(Exe_Name){
 		WinGet,GetStyle,Style,ahk_id %PID%
 		WinGetTitle,Title,ahk_id %PID%
 		WinGet,Path,ProcessPath,ahk_id %PID%
-		;Transform,kk,Round,Ger/WinList
-		;MsgBox % Ger "`n" Gers "`n" WinList "`n" kk
 		if not Starts
     		Progress,% Gers+=Ger/WinList ,% Title,构建当前窗口信息...,HotWindows
 		if GetStyle in %Styles%
@@ -437,7 +453,7 @@ Add_quick(Path){
 	{
 		SplitPath,Path,OutFileName,OutDir,OutExtension,OutNameNoExt,OutDrive
 			if not Sql_Get("SELECT COUNT(*) FROM Quick WHERE Path='" Path "'"){
-				SQL_Run("DELETE FROM Quick WHERE Title='" OutNameNoExt "'")
+				SQL_Run("DELETE FROM Quick WHERE Path='" Path "'")
 				SQL_Run("Insert INTO Quick (Title,Path) VALUES ('" OutNameNoExt "','" Path "')")
 				if not Sql_Get("SELECT Times FROM Activate WHERE Title='" OutNameNoExt "'")
 					SQL_Run("Insert INTO Activate (Title,Times) VALUES ('" OutNameNoExt "','1')")
