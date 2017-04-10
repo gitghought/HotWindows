@@ -23,6 +23,9 @@
 ![](https://github.com/liumenggit/pic/raw/master/alipayhotwin12.png)
 
 ## 更新历史
+* 201715
+	* 优化-脚本运行更顺畅线程不会别轻易的中断
+	* 优化-使用[GitHubUpdete](https://github.com/liumenggit/GitUpdate)更新自身
 * 201714
 	* 优化-热键设置
 	* 添加-用户统计功能

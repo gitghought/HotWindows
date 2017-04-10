@@ -10,8 +10,6 @@ SetBatchLines -1
 
 ;<<<<<<<<<<<<默认值>>>>>>>>>>>>
 Path_data=%A_ScriptDir%\HotWindows.mdb	;数据库地址
-FileRead,Edition,README.md
-RegExMatch(Edition,"\b\d{6}\b",Edition)
 
 ;<<<<<<<<<<<<WIN10 WIN8中重要的设置值>>>>>>>>>>>>
 RegRead,Bubble,HKEY_CURRENT_USER,SOFTWARE\Policies\Microsoft\Windows\Explorer,EnableLegacyBalloonNotifications
@@ -54,8 +52,8 @@ Menu,Tray,Icon,清除记录,MenuIco.icl,2
 Menu,Tray,Icon,重启脚本,MenuIco.icl,5
 Menu,Tray,Icon,退出脚本,MenuIco.icl,3
 Menu,Tray,NoStandard
-Menu,Tray,Tip,HotWindows`n版本:%Edition%
 Menu,Tray,Icon,MenuIco.icl,7
+Menu,Tray,Icon,,,1
 RegRead,HotRun,HKEY_CURRENT_USER,Software\Microsoft\Windows\CurrentVersion\Run,HotRun
 RegRead,Bubble,HKEY_CURRENT_USER,SOFTWARE\Policies\Microsoft\Windows\Explorer,EnableLegacyBalloonNotifications
 RegRead,Show_mode,HKEY_CURRENT_USER,HotWindows,HotShow_mode	;显示方式
@@ -98,11 +96,6 @@ if not Boot{
 }else if (Boot="1"){
 	Menu,Tray,ToggleCheck,输入保护
 }
-if LastTime and (LastTime<Edition)
-	MsgBox,4,升级成功,已从%LastTime%升级到%Edition%`n点击确定查看更新内容
-	IfMsgBox Yes
-		RunWait https://github.com/liumenggit/HotWindows#更新历史
-RegWrite,REG_SZ,HKEY_CURRENT_USER,HotWindows,HotEdit,%Edition%
 
 ;<<<<<<<<<<<<热键创建>>>>>>>>>>>>
 Layout=qwertyuiopasdfghjklzxcvbnm
@@ -124,36 +117,7 @@ ListWidth:=Width/4
 global Styles,Path_data,Show_mode,K_ThisHotkey,WHERE_list,Path_list,Ger,Gers,Starts,NewEdition
 
 ;<<<<<<<<<<<<检查更新>>>>>>>>>>>>
-if W_InternetCheckConnection("https://github.com"){
-	Progress,,确保网络联通,检查更新请稍等...,HotWindows
-
-	ie:=ComObjCreate("InternetExplorer.Application") 
-	ie.visible :=false
-	ie.Navigate("http://onulm6njq.bkt.clouddn.com/index.html") 
-	Loop {
-		Sleep,200
-		if (ie.readyState="complete" or ie.readyState=4 or A_LastError!=0)
-			break
-	}
-	RegExMatch(ie.document.GetElementsByTagName("BODY").item(0).outertext,"(?<=\|.).*",NewCnzz)
-	ie.quit()
-	Progress,,%NewCnzz%,检查更新请稍等...,HotWindows
-
-	whr := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-	whr.Open("GET","https://raw.githubusercontent.com/liumenggit/HotWindows/master/README.md",false)
-	Try{
-		whr.Send()
-		whr.WaitForResponse()
-		RegExMatch(whr.ResponseText,"\b\d{6}\b",NewEdition)
-	}catch e {
-		Progress,,,检查更新出错...,HotWindows
-	}
-	;Edition=201701
-	if (NewEdition>Edition){
-		Progress,,确保网络联通,正在更新至%NewEdition%...,HotWindows
-		gosub,Downloand
-	}
-}
+UpdateInfo:=Git_Update("https://github.com/liumenggit/HotWindows","Show")
 
 ;<<<<<<<<<<<<DLL载入>>>>>>>>>>>>
 tcmatch := "Tcmatch.dll"
@@ -167,7 +131,6 @@ Gui,Add,StatusBar
 WinSet,Transparent,200,ahk_id %MyGuiHwnd%
 
 ;<<<<<<<<<<<<创建SQL表>>>>>>>>>>>>
-FileDelete,%Path_data%
 IfNotExist,%Path_data%
 {
 	Catalog:=ComObjCreate("ADOX.Catalog")
@@ -181,7 +144,8 @@ IfNotExist,%Path_data%
 
 ;<<<<<<<<<<<<加载列表>>>>>>>>>>>>
 Load_list()	;创建初始程列表
-TrayTip,HotWindows,准备完成开始使用`n当前版本号：%Edition%`n捐赠支付宝：rrsyycm@163.com`n%NewCnzz%,,1
+TrayTip,HotWindows,% "准备完成开始使用`n当前版本号：" UpdateInfo.Edition "`n捐赠支付宝：rrsyycm@163.com`n" NewCnzz,,1
+Menu,Tray,Tip,% "HotWindows`n版本:" UpdateInfo.Edition
 ;<<<<<<<<<<<<主要循环>>>>>>>>>>>>
 loop{
 	WinGet,Wina_ID,ID,A
@@ -200,15 +164,18 @@ Return
 
 ;<<<<<<<<<<<<主要功能的标签>>>>>>>>>>>>
 Layout:
+	Critical
 	StringRight,H_ThisHotkey,A_ThisHotkey,1
 	K_ThisHotkey:=K_ThisHotkey H_ThisHotkey
 	StrLens := StrLen(K_ThisHotkey)
 	ToolTip,,%K_ThisHotkey%
-	if StrLens=1
+	if (StrLens="1"){
 		loop,9{
 			Hotkey,%A_Index%,Table
 			Hotkey,%A_Index%,On
 		}
+		SetTimer,Key_wait,1
+	}
 	SQL_List("SELECT Activate.title,Activate.times,t1.pid,t1.path,t1.getstyle FROM Activate LEFT JOIN (SELECT * FROM Now_list UNION SELECT * FROM Quick) AS t1 ON Activate.title = t1.title WHERE t1.pid IS NOT NULL OR t1.path IS NOT NULL ORDER BY Activate.Times +- 1 DESC,t1.GetStyle DESC",K_ThisHotkey)
 	if WHERE_list.Length() and K_ThisHotkey{
 		Show_list(WHERE_list)
@@ -219,8 +186,6 @@ Layout:
 	}else{
 		Cancel()
 	}
-	if StrLens=1
-		SetTimer,Key_wait,200
 Return
 
 
@@ -231,8 +196,10 @@ Return
 Key_wait:
 	SetTimer,Key_wait,off
 	KeyWait,%Hot_Set_key%,L
-	if not K_ThisHotkey
+	if not K_ThisHotkey{
+		Cancel()
 		Return
+	}
 	if (EventInfo<>"0") and (Show_mode="ListView"){
 		if (Boot="1") and (StrLens="1")
 			Cancel()
@@ -248,6 +215,7 @@ Key_wait:
 		Activate("1")
 	if (Boot="1") and (StrLens>"1")	;开启了输入保护发生了事情
 		Activate("1")
+	Cancel()
 Return
 
 Add_exe:
@@ -423,7 +391,7 @@ Load_list(){
 }
 Load_exe(Exe_Name){
 	if not Exe_Name
-		return
+		Return
 	SQL_Run("DELETE FROM Now_list WHERE Path LIKE '%" Exe_Name "'")
 	WinGet,WinList,List,ahk_exe %Exe_Name%
 	WinGet,Path,ProcessPath,ahk_exe %Exe_Name%
@@ -435,7 +403,7 @@ Load_exe(Exe_Name){
 		WinGet,GetStyle,Style,ahk_id %PID%
 		WinGetTitle,Title,ahk_id %PID%
 		WinGet,Path,ProcessPath,ahk_id %PID%
-		if not Starts
+		if not Starts and Title
     		Progress,% Gers+=Ger/WinList ,% Title,构建当前窗口信息...,HotWindows
 		if GetStyle in %Styles%
 			if Title and GetIconCount(Path){
@@ -472,10 +440,10 @@ GetIconCount(file){
 			break
 		}
 	}
-return id-1
+Return id-1
 }
 handle:
-return
+Return
 ;<<<<<<<<<<<<MENU的功能>>>>>>>>>>>>
 Bubble:
 if Bubble
@@ -615,61 +583,71 @@ SQL_Get(SQL){	;向数据库运行命令请求返回
 		Return 0
 }
 
-;<<<<<<<<<<<<更新功能>>>>>>>>>>>>
-Downloand:
-	Progress,,确保网络联通,正在更新至%NewEdition%...,HotWindows
-	SysGet, m, MonitorWorkArea,1
-	x:=A_ScreenWidth-520
-	y:=A_ScreenHeight-180
-	URL=https://codeload.github.com/liumenggit/HotWindows/zip/master
-	SplitPath, URL, FN,,,, DN
-	FN:=(FN ? FN : DN)
-	SAVE=%A_ScriptDir%\HotWindows-master.zip
-	DllCall("QueryPerformanceCounter", "Int64*", T1)
-	WP1=0
-	T2=0
-	WP2=0
-	if ((E:=InternetFileRead( binData, URL, False, 1024)) > 0 && !ErrorLevel)
-	{
-		VarZ_Save(binData, SAVE)
-		Progress,100,下载完成,正在更新至%NewEdition%...,HotWindows
-		SmartZip(SAVE,A_ScriptDir "\" NewEdition)
-		FileDelete,%SAVE%
-		gosub,ExitSub
-		ExitApp
-	}else{
-		ERR := (E<0) ? "下载失败，错误代码为" . E : "下载过程中出错，未能完成下载。请手动更新。"
-		Progress,0,%ERR%,正在更新至%NewEdition%...,HotWindows
-		Sleep, 500
-		return
-	}
-	DllCall( "FreeLibrary", UInt,DllCall( "GetModuleHandle", Str,"wininet.dll") )
-return
+;作者：请勿打扰
+;功能：适用GItHub项目更新，加入脚本中即可使用自己的GitHub项目地址
+;介绍：根据GitHub中Commitkey获取是否更新
+;注意：能够使用GitHub的朋友应该对代码都非常熟悉那么有其他需要请自行修改
 
-ExitSub:
-	;rd /s/q %D_history%
+Git_Update(GitUrl,GressSet:="Hide"){
+	if not W_InternetCheckConnection(GitUrl)
+		Return
+	SplitPath,GitUrl,Project_Name
+	RegRead,Reg_Commitkey,HKEY_CURRENT_USER,%Project_Name%,Commitkey
+	if GressSet=Show
+		Progress,100,% Reg_Commitkey " >>> " Git_CcommitKey.Edition,检查更新请稍等...,% Project_Name
+	Git_CcommitKey:=Git_CcommitKey(GitUrl)
+	if not Git_CcommitKey.Edition{	;获取更新失败返回
+		Progress,Off
+		Return
+	}
+	if not Reg_Commitkey or (Reg_Commitkey<>Git_CcommitKey.Edition){	;存在更新开始更新
+		Progress,1 T Cx0 FM10,初始化下载,% Reg_Commitkey " >>> " Git_CcommitKey.Edition " 简介：" Git_CcommitKey.Commit,% Project_Name
+		Git_Downloand(Git_CcommitKey,Project_Name)
+	}else{
+		Progress,,,暂无更新,% Project_Name
+	}
+	Progress,Off
+	Return Git_CcommitKey
+}
+
+Git_Downloand(DownloandInfo,Project_Name){
+	DownUrl:="https://github.com" DownloandInfo.Down
+	SplitPath,A_ScriptName,,,,A_name
+	SplitPath,DownUrl,DownName,,,OutNameNoExt
+	if not Z_Down(DownUrl,"",A_name,A_Temp "\" DownName){
+		Progress,Off
+		Return
+	}
+	UncoilUrl:=A_Temp "\" A_NowUTC
+	SmartZip(A_Temp "\" DownName,UncoilUrl)
+	FileDelete,% A_Temp "\" DownName
+	Git_Bat(UncoilUrl "\" Project_Name "-" OutNameNoExt,Project_Name,DownloandInfo.Edition)
+	ExitApp
+}
+
+Git_Bat(File,RegAdd_name,Add_Edition){
 bat=
 		(LTrim
 :start
 	ping 127.0.0.1 -n 2>nul
 	del `%1
 	if exist `%1 goto start
-	xcopy %A_ScriptDir%\%NewEdition%\HotWindows-master %A_ScriptDir% /s/e/y
+	xcopy %File% %A_ScriptDir% /s/e/y
+	reg add HKEY_CURRENT_USER\%RegAdd_name% /v Commitkey /t REG_SZ /d %Add_Edition% /f
 	start %A_ScriptFullPath%
 	del `%0
 	)
-	batfilename=Delete.bat
-	IfExist %batfilename%
-		FileDelete %batfilename%
-	FileAppend, %bat%, %batfilename%
-	Run,%batfilename% , , Hide
+	IfExist GitDelete.bat
+		FileDelete GitDelete.bat
+	FileAppend,%bat%,GitDelete.bat
+	Run,GitDelete.bat,,Hide
 	ExitApp
-return
+}
 
 SmartZip(s, o, t = 16)	;内置解压函数
 {
 	IfNotExist, %s%
-		return, -1
+		Return, -1
 	oShell := ComObjCreate("Shell.Application")
 	if InStr(FileExist(o), "D") or (!FileExist(o) and (SubStr(s, -3) = ".zip"))
 	{
@@ -688,74 +666,63 @@ SmartZip(s, o, t = 16)	;内置解压函数
 	}
 }
 
+Git_CcommitKey(Project_Url){
+	whr:=ComObjCreate("WinHttp.WinHttpRequest.5.1")
+	;whr.SetProxy("HTTPREQUEST_PROXYSETTING_PROXY","proxy_server:80","*.GitHub.com") ;https://msdn.microsoft.com/en-us/library/aa384059(v=VS.85).aspx
+	whr.Open("GET",Project_Url,True)
+	whr.SetRequestHeader("Content-Type","application/x-www-form-urlencoded")
+	Try
+	{
+		whr.Send()
+		whr.WaitForResponse()
+		RegExMatch(whr.ResponseText,"`a)(?<=data-pjax>\n\s{8})\S{7}",NewEdition)
+		RegExMatch(whr.ResponseText,"`a)\/.*\.zip",Downloand)
+		RegExMatch(whr.ResponseText,"`a)(?<=class=""message"" data-pjax=""true"" title="").+(?="">)",Committitle)
+		;MsgBox % NewEdition "`n" Downloand "`n" Committitle "`n-------------------------"
+		Return {Edition:NewEdition,Down:Downloand,Commit:Committitle}
+	}catch e {
+		Return
+	}
+}
 
 W_InternetCheckConnection(lpszUrl){ ;检查FTP服务是否可连接
 	FLAG_ICC_FORCE_CONNECTION := 0x1
 	dwReserved := 0x0
-	return, DllCall("Wininet.dll\InternetCheckConnection", "Ptr", &lpszUrl, "UInt", FLAG_ICC_FORCE_CONNECTION, "UInt", dwReserved, "Int")
+	Return, DllCall("Wininet.dll\InternetCheckConnection", "Ptr", &lpszUrl, "UInt", FLAG_ICC_FORCE_CONNECTION, "UInt", dwReserved, "Int")
 }
-
-InternetFileRead( ByRef V, URL="", RB=0, bSz=1024, DLP="DLP", F=0x84000000 )
-{
-	SetBatchLines, -1
-	Static LIB="WININET\", QRL=16, CL="00000000000000", N=""
-	If ! DllCall( "GetModuleHandle", Str,"wininet.dll" )
-		DllCall( "LoadLibrary", Str,"wininet.dll" )
-	If ! hIO:=DllCall( LIB "InternetOpen", Str,N, UInt,4, Str,N, Str,N, UInt,0 )
-		Return -1
-	If ! ( ( hIU:=DllCall( LIB "InternetOpenUrl", UInt,hIO, Str,URL, Str,N, Int,0, UInt,F , UInt,0 ) ) || ErrorLevel )
-		Return 0 - ( !DllCall( LIB "InternetCloseHandle", UInt,hIO ) ) - 2
-	If ! ( RB )
-	If ( SubStr(URL,1,4) = "ftp:" )
-		CL := DllCall( LIB "FtpGetFileSize", UInt,hIU, UIntP,0 )
-	Else If ! DllCall( LIB "HttpQueryInfo", UInt,hIU, Int,5, Str,CL, UIntP,QRL, UInt,0 )
-		Return 0 - ( !DllCall( LIB "InternetCloseHandle", UInt,hIU ) ) - ( !DllCall( LIB "InternetCloseHandle", UInt,hIO ) ) - 4
-	VarSetCapacity( V,64 ), VarSetCapacity( V,0 )
-	SplitPath, URL, FN,,,, DN
-	FN:=(FN ? FN : DN), CL:=(RB ? RB : CL), VarSetCapacity( V,CL,32 ), P:=&V,
-	B:=(bSz>CL ? CL : bSz), TtlB:=0, LP := RB ? "Unknown" : CL, %DLP%( True,CL,FN )
-	Loop
-	{
-		If ( DllCall( LIB "InternetReadFile", UInt,hIU, UInt,P, UInt,B, UIntP,R ) && !R )
-			Break
-		P:=(P+R), TtlB:=(TtlB+R), RemB:=(CL-TtlB), B:=(RemB<B ? RemB : B), %DLP%( TtlB,LP )
-		Sleep -1
-	}
-	TtlB<>CL ? VarSetCapacity( T,TtlB ) DllCall( "RtlMoveMemory", Str,T, Str,V, UInt,TtlB ) . VarSetCapacity( V,0 ) . VarSetCapacity( V,TtlB,32 ) . DllCall( "RtlMoveMemory", Str,V , Str,T, UInt,TtlB ) . %DLP%( TtlB, TtlB ) : N
-	If ( !DllCall( LIB "InternetCloseHandle", UInt,hIU ) ) + ( !DllCall( LIB "InternetCloseHandle", UInt,hIO ) )
-		Return -6
-	Return, VarSetCapacity(V)+((ErrorLevel:=(RB>0 && TtlB<RB)||(RB=0 && TtlB=CL) ? 0 : 1)<<64)
+Z_Down(url:="http://61.135.169.125/forbiddenip/forbidden.html", Proxy:="",e:="utf-8", File:="",byref buf:=""){
+	if (!(File?o:=FileOpen(File, "w"):1) or !DllCall("LoadLibrary", "str", "wininet") or !(h := DllCall("wininet\InternetOpen", "str", "", "uint", Proxy?3:1, "str", Proxy, "str", "", "uint", 0)))
+		Return 0
+	c:=s:=0
+	if (f := DllCall("wininet\InternetOpenUrl", "ptr", h, "str", url, "ptr", 0, "uint", 0, "uint", 0x80003000, "ptr", 0, "ptr"))
+		{
+			if File or IsByRef(buf)
+			{
+				VarSetCapacity(buffer,1024,0),VarSetCapacity(bufferlen,4,0)
+				Loop, 5
+				if (DllCall("wininet\HttpQueryInfo","uint",f, "uint", 22, "uint", &buffer, "uint", &bufferlen, "uint", 0) = 1)
+				{
+					Progress,+20
+					y:= Trim(StrGet(&buffer)," `r`n"),q:=[]
+					Loop,parse,y,`r`n
+						(x:=InStr(A_LoopField,":"))?q[SubStr(A_LoopField, 1,x-1)]:=Trim(SubStr(A_LoopField, x+1)):q[A_LoopField]:=""
+					if (e=0)
+						Return q
+					((i:= Round((fj:=q["Content-Length"])/1024)) < 1024) ?(fx:=1024,fz:= "/" i " K",percent:=i) : (fx:=1048576,fz:= "/" Round(i/1024, 1) " M",percent:=i/1024)
+					,VarSetCapacity(Buf, fj, 0),DllCall("QueryPerformanceFrequency", "Int64*", i), DllCall("QueryPerformanceCounter", "Int64*", x)
+					break
+				}
+			}
+			Progress,100
+			While (DllCall("Wininet.dll\InternetQueryDataAvailable", "Ptr", F, "UIntP", S, "UInt", 0, "Ptr", 0) && (S > 0)) {             
+				fj	?(DllCall("Wininet.dll\InternetReadFile", "Ptr", F, "Ptr", &Buf + C, "UInt", S, "UIntP", R),C += R,DllCall("QueryPerformanceCounter", "Int64*", y),((t:=(y-x)/i) >=1)?(Test(e,Round(c/fx,2) fz " | " Round(((c-w)/1024)/t) "KB/秒",Round(c/fx/percent*100)),x:=y,w:=c):"")
+					:(VarSetCapacity(b, c+s, 0),DllCall("RtlMoveMemory", "ptr", &b, "ptr", &buf, "ptr", c),DllCall("wininet\InternetReadFile", "ptr", f, "ptr", &b+c, "uint", s, "uint*", r),VarSetCapacity(buf, c+=r, 0), DllCall("RtlMoveMemory", "ptr", &buf, "ptr", &b, "ptr", c))
+			}
+			(q?((fj=c)?"":q["Error"]:=c):""),(File?(o.rawWrite(buf, c), o.close()):""), DllCall("wininet\InternetCloseHandle", "ptr", f)
+		}
+	DllCall("wininet\InternetCloseHandle", "ptr", h)
+	Return (File or IsByRef(buf)?q:StrGet(&buf, c>>(e="utf-16"||e="cp1200"), e))
 }
-
-DLP(WP=0, LP=0, MSG="")
-{
-	global INI,FN,T1,T2,WP1,WP2,SP
-	Progress,% Round(WP/LP*100),%WP% / %LP%    %SP% KB/S,正在更新至%NewEdition%...,HotWindows
-	DllCall("QueryPerformanceCounter", "Int64*", T2)
-	DllCall("QueryPerformanceFrequency", "Int64*", TI)
-	WP2:=WP
-	if ((T:=(T2-T1)/TI) >=1)
-	{
-		SP:=Round(((WP2-WP1)/1024)/T,2)
-		T1:=T2
-		WP1:=WP2
-	}
-	WP:= ((WP:= Round(WP/1024)) < 1024) ? WP . " KB" : Round(WP/1024, 2) . " MB"
-	LP:= ((LP:= Round(LP/1024)) < 1024) ? LP . " KB" : Round(LP/1024, 2) . " MB"
-	Progress,,%WP% / %LP%    %SP% KB/S,正在更新至%NewEdition%...,HotWindows
-}
-
-VarZ_Save( byRef V, File="" ) { ; www.autohotkey.net/~Skan/wrapper/FileIO16/FileIO16.ahk
-Return ( ( hFile := DllCall( "_lcreat", AStr,File, UInt,0 ) ) > 0 )
- ? DllCall( "_lwrite", UInt,hFile, Str,V, UInt,VarSetCapacity(V) )
- + ( DllCall( "_lclose", UInt,hFile ) << 64 ) : 0
-}
-
-Update(URL){
-	static req := ComObjCreate("Msxml2.XMLHTTP")
-	req.open("GET",URL,false)
-	try req.Send()
-	catch e
-		return
-	return req.responseText
+Test(A,b,c){
+	Progress,%c%,%b%
 }
