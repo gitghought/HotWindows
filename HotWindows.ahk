@@ -184,6 +184,7 @@ Layout:
 			Send {%Hot_Set_key% Up}
 		}
 	}else{
+		Critical off
 		Cancel()
 	}
 Return
@@ -221,7 +222,7 @@ Return
 Add_exe:
 Gui,New
 Gui,Add_exe:New
-Gui,Add_exe:+LabelMyAdd +ToolWindow +AlwaysOnTop
+Gui,Add_exe:+LabelMyAdd +AlwaysOnTop
 Gui,Add_exe:Add,Text,xm,添加程序请将文件拖入本窗口
 Gui,Add_exe:Add,ListView,xm w%ListWidth% vAdd_list r9,名称|路径
 Gui,Add_exe:Add,Text,xm,此处添加程序目录c:\Users\*.exe或c:\Users\*.lnk
