@@ -5,5 +5,4 @@
 !*.dll
 !*.tbl
 !*.ini
-!.gitignore
 !HotWindows.ahk
